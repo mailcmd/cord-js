@@ -22,30 +22,19 @@
    - [x] Attributes type 'disabled' or 'checked'
    - [ ] Special attribute 'render-onchange' to force render on field change 
    
-## SERVER
-   - [ ] For CORD-server define a way to add extra headers to index.html
 
-## WEBSOCKET
+## WEBSOCKET and EVENTSOURCE
    - [x] Define format for direct server update of cord_containers
-   - [x] Client subscribe to channels on server
-   - [x] Server send news to clients
-   - [x] Broadcast channel, all clients subscribed automatically.
-   - [x] Send broadcast to notify about channels add/remove 
    
-
 
 # CORD
 
-CORD is a tiny framework for web development. 
+CORD a tiny reactive javascript library to web development 
 
 ## Concepts
 
 CORD is etentially a javascript client library (CORD-js) that allow to build reactive web pages, 
 i.e, changing some property of an object, automatically update the page content. 
-
-CORD also has a server side component (CORD-server)) developed in Elixir language that open a HTTP 
-server, a WebSocket server and a EventSource script server. But you can use CORD without any of 
-this or use your own server side deployment. 
 
 ## How to use?
 
