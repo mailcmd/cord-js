@@ -38,6 +38,17 @@ i.e, changing some property of an object, automatically update the page content.
 
 ## How to use?
 
+Ways of use containers field inside a template:
+
+```
+${<local-field>}                         # render local field of the container
+${#{<cord-id>:<field>}}                  # render foreing field of another container
+${$.<cord-id>.<field>[<index>]}          # another way of use foreing field
+```
+
+
+## Example
+
 This is a typical index page for using cord:
 ```html
 <!DOCTYPE html>
