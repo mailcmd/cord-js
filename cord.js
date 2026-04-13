@@ -430,8 +430,7 @@ const CORD = function() {
             .toArray()
             .map(([_, e]) => e);
 
-        console.log('STR', _str);
-        
+        // console.log('STR', _str);        
         const local_handler = {
             get(target, prop, x) {
                 if (typeof prop == 'symbol') return (x)=>0;
@@ -452,8 +451,6 @@ const CORD = function() {
         );
         evaluator.bind(sandbox)();
 
-        console.log('IDS', result, cord_id)
-        
         return result
             .uniq()
             .map(s => s.trim())
@@ -668,11 +665,9 @@ const CORD = function() {
 
             // cordNodes store data nodes associates to fields
             elem.cordNodes = {};
-            console.log('NOD', cord_id, get_text_nodes(elem))
             get_text_nodes(elem).forEach( node => {
                 node.cordContent = node.textContent;
                 node.cordContainer = cord_id;
-                console.log('IDS', cord_id, node.cordContent, get_identifiers(node.cordContent, cord_id))
                 get_identifiers(node.cordContent, cord_id).forEach(f => {
                     // if f is a global field
                     if (f[0] == '#') {
