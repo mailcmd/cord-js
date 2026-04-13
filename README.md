@@ -42,8 +42,14 @@ Ways of use containers field inside a template:
 
 ```
 ${<local-field>}                         # render local field of the container
-${#{<cord-id>:<field>}}                  # render foreing field of another container
+#{<cord-id>:<field>}                  # way of use foreing field
 ${$.<cord-id>.<field>[<index>]}          # another way of use foreing field
+```
+
+**In if expression or foreach:** 
+```
+<local-field>                         # render local field of the container
+#{<cord-id>:<field>}                  # way of use foreing field
 ```
 
 

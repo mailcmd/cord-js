@@ -336,7 +336,83 @@ const CORD = function() {
         document.body.style.filter = '';
     };
 
-    const get_identifiers = function(str) {
+    // const tokenizer = function(str, cord_id) {
+    //     let i = 0, token = '', string_opened = false;
+    //     const tokens = [];
+    //     while (str[i] !== undefined) {
+    //         const c = str[i];
+    //         if (!string_opened && c.match(/[a-z0-9_\$\:\#]/)) {
+    //             token += c;
+    //         } else if (!string_opened && c == '.') {
+    //             if (token != '') {
+    //                 tokens.push(token.trim());
+    //                 token = '';
+    //             }
+    //         } else if (!string_opened && ['[', ']'].includes(c)) {
+    //             if (token != '') {
+    //                 tokens.push(token.trim());
+    //                 token = '';
+    //             }
+    //         } else if (!string_opened && ['(', ')'].includes(c)) {
+    //             if (token != '') {
+    //                 tokens.push(token.trim());
+    //                 token = '';
+    //             }
+    //         } else if (!string_opened && [',', ';', '|', '&'].includes(c)) {
+    //             if (token != '') {
+    //                 tokens.push(token.trim());
+    //                 token = '';
+    //             }
+    //         } else if (!string_opened && ["'", '"'].includes(c)) {
+    //             if (token != '') {
+    //                 tokens.push(token.trim());
+    //                 token = '';
+    //             }
+    //             string_opened = true;
+    //         } else if (string_opened && ["'", '"'].includes(c)) {
+    //             string_opened = false;
+    //         } 
+    //         i++;
+    //     }
+    //     if (token != '') tokens.push(token.trim());
+
+    //     return tokens;
+
+    //     // :'( I can do this below because get_indetifier is used during bootstrap process and
+    //     //     during bootstrap the containers are not initialized.
+    //     //     I need to think about this, maybe remake some CORD parts. 
+        
+    //     // const containers_keys = Object.fromEntries(
+    //     //     Object.keys(DATAS).map( k => {return [k, Object.keys(DATAS[k])] })
+    //     // );
+    //     // const valid_tokens = [];
+    //     // if (tokens.length == 1 && containers_keys[cord_id].includes(tokens[0])) {
+    //     //     valid_tokens.push(tokens[0]);
+    //     // } else if (containers_keys[tokens[0]]?.includes(tokens[1])) {
+    //     //     valid_tokens.push(tokens[1]);
+    //     // }
+    //     // return valid_tokens.length > 0 ? valid_tokens : null;
+    // };
+
+    // const get_identifiers = function(str, cord_id) {
+    //     str = decode_htmlentities(str);
+    //     const discard_list = ['_', null, '$'];
+
+    //     const result = str
+    //           .matchAll(/\$\{(.+?)\}/gs)
+    //           .toArray()
+    //           .map(([_, e]) => tokenizer(e, cord_id))
+    //           .flat(Infinity);
+
+    //     // console.log('IDS', result, cord_id)
+
+    //     return result     
+    //         .uniq()
+    //         .map(s => s.trim())
+    //         .filter(v => !(discard_list.includes(v)));
+    // };    
+
+    const get_identifiers = function(str, cord_id) {
         str = '\`'+decode_htmlentities(str)+'\`';
         const result = [], discard_list = ['_'];
 
@@ -348,6 +424,13 @@ const CORD = function() {
         );
 
         str = str.replace(/#\{(.+?)\}/gs, '_');
+
+        _str = str
+            .matchAll(/\$\{(.+?)\}/gs)
+            .toArray()
+            .map(([_, e]) => e);
+
+        console.log('STR', _str);
         
         const local_handler = {
             get(target, prop, x) {
@@ -369,13 +452,58 @@ const CORD = function() {
         );
         evaluator.bind(sandbox)();
 
+        console.log('IDS', result, cord_id)
+        
         return result
             .uniq()
             .map(s => s.trim())
             .filter(v => !(discard_list.includes(v)));
     };
+    
     // this.x = get_identifiers;
     
+    const cord_eval = function(str, context) {
+        const sandbox = new Proxy(context, {
+            get(target, prop) {
+                if (prop in target) {
+                    return target[prop];
+                } else if (prop in window) {
+                    return window[prop];
+                } else {
+                    return $this.config.strict ? undefined : "";
+                }
+            },
+            has(target, prop) {
+                return true;
+            }
+        });
+
+        const replaces = str.matchAll(/#\{(.+?)\}/gs)
+            .toArray()
+            .map(([t, e]) => [t, '$[\''+e.replace(/:/g, '\'][\'')+'\']'])
+
+        str = replaces.reduce((s, [m, n]) => s.replace(new RegExp(m, 'g'), n), str);
+
+        const _sandbox = Object.fromEntries(
+            Object.entries(sandbox).filter( ([k,_]) => k[0] != '#')
+        );
+        const keys = Object.keys(_sandbox);
+        const values = Object.values(_sandbox);
+        const str_decoded = decode_htmlentities(str);
+        // console.log(str)
+        const evaluator = new Function(...keys,
+            `with (this) { return \`${str_decoded}\`; }`
+        );
+
+        try {
+            // return evaluator.bind(window).apply(sandbox, values);
+            return evaluator.bind(sandbox).apply(sandbox, values);
+        } catch(e) {
+            console.error(`Error evaluating string: `, e);
+            return str;
+        }
+    };
+
     const get_text_nodes = function(elem) {
         const cid = elem.getAttribute('cord-id');
         const children = [];
@@ -390,7 +518,8 @@ const CORD = function() {
         }
         return children;
     };
-
+    // this.x = get_text_nodes;
+    
     const decode_htmlentities = function(html) {
         const STANDARD_HTML_ENTITIES = {
             nbsp: String.fromCharCode(160),
@@ -445,47 +574,6 @@ const CORD = function() {
                 const re = new RegExp('%'+a+'%', 'sg');
                 return acc.replace(re, b)
             }, html);
-    };
-
-    const cord_eval = function(str, context) {
-        const sandbox = new Proxy(context, {
-            get(target, prop) {
-                if (prop in target) {
-                    return target[prop];
-                } else if (prop in window) {
-                    return window[prop];
-                } else {
-                    return $this.config.strict ? undefined : "";
-                }
-            },
-            has(target, prop) {
-                return true;
-            }
-        });
-
-        const replaces = str.matchAll(/#\{(.+?)\}/gs)
-            .toArray()
-            .map(([t, e]) => [t, '$[\''+e.replace(/:/g, '\'][\'')+'\']'])
-
-        str = replaces.reduce((s, [m, n]) => s.replace(new RegExp(m, 'g'), n), str);
-
-        const _sandbox = Object.fromEntries(
-            Object.entries(sandbox).filter( ([k,_]) => k[0] != '#')
-        );
-        const keys = Object.keys(_sandbox);
-        const values = Object.values(_sandbox);
-        const str_decoded = decode_htmlentities(str);
-        const evaluator = new Function(...keys,
-            `with (this) { return \`${str_decoded}\`; }`
-        );
-
-        try {
-            // return evaluator.bind(window).apply(sandbox, values);
-            return evaluator.bind(sandbox).apply(sandbox, values);
-        } catch(e) {
-            console.error(`Error evaluating string: `, e);
-            return str;
-        }
     };
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -580,10 +668,12 @@ const CORD = function() {
 
             // cordNodes store data nodes associates to fields
             elem.cordNodes = {};
+            console.log('NOD', cord_id, get_text_nodes(elem))
             get_text_nodes(elem).forEach( node => {
                 node.cordContent = node.textContent;
                 node.cordContainer = cord_id;
-                get_identifiers(node.cordContent).forEach(f => {
+                console.log('IDS', cord_id, node.cordContent, get_identifiers(node.cordContent, cord_id))
+                get_identifiers(node.cordContent, cord_id).forEach(f => {
                     // if f is a global field
                     if (f[0] == '#') {
                         const [_cord_id, _field] = f.slice(1).split(':');
@@ -615,7 +705,7 @@ const CORD = function() {
                 const field = tpl.getAttribute('foreach');
                 if (!elem.cordForeach[field]) elem.cordForeach[field] = [];
                 elem.cordForeach[field].push(tpl);
-                get_identifiers(tpl.innerHTML).forEach(f => {
+                get_identifiers(tpl.innerHTML, cord_id).forEach(f => {
                     // if f is a global field
                     if (f[0] == '#') {
                         const [_cord_id, _field] = f.slice(1).split(':');
@@ -646,7 +736,7 @@ const CORD = function() {
             elem.cordIfs = {};
             elem.querySelectorAll('template[if]').forEach( tpl => {
                 tpl.cordContainer = cord_id;
-                get_identifiers(tpl.getAttribute('if')+','+tpl.innerHTML).forEach(f => {
+                get_identifiers(tpl.getAttribute('if')+','+tpl.innerHTML, cord_id).forEach(f => {
                     const exp = tpl.getAttribute('if');
                     // if f is a global field
                     if (f[0] == '#') {
@@ -680,7 +770,7 @@ const CORD = function() {
                 const attrs = el.attributes;
                 for (let i = 0; i < attrs.length; i++) {
                     if (! /[#\$]\{.+?\}/.test(attrs[i].nodeValue)) continue;
-                    get_identifiers(attrs[i].nodeValue).forEach(f => {
+                    get_identifiers(attrs[i].nodeValue, cord_id).forEach(f => {
                         if (f[0] == '#') {
                             const [_cord_id, _field] = f.slice(1).split(':');
                             if (!window.cordGlobalAttrs[_cord_id])
@@ -775,7 +865,7 @@ const CORD = function() {
                 const cloned_tpl = tpl.cloneNode(true);
                 cloned_tpl.content.querySelectorAll('template').forEach( n => n.remove() );
                 const env = {
-                    ...{$: DATAS},
+                    ...{$: DATAS, ROOT: DATAS},
                     ...DATAS[cord_id],
                     ...row
                 };
@@ -809,8 +899,8 @@ const CORD = function() {
 
             if (tpl?.nextElementSibling?.is_cordif)
                 tpl.nextElementSibling.remove();
-
-            const env = {...DATAS[cord_id], ...{$: DATAS}}
+                    
+            const env = {...DATAS[cord_id], ...{$: DATAS, ROOT: DATAS}};
             const if_exp = tpl.getAttribute('if');
             const exp_eval = eval("'"+cord_eval(if_exp, env)+"'");
 
@@ -895,7 +985,7 @@ const CORD = function() {
               : [...Object.keys(DATAS[cord_id]), ...elem.cordGlobalFields] ;
 
         // env has {$: DATAS} to eval global fields
-        const env = {...DATAS[cord_id], ...{$: DATAS}}
+        const env = {...DATAS[cord_id], ...{$: DATAS, ROOT: DATAS}}
 
         const cord_containers_affected = new Set();
 
