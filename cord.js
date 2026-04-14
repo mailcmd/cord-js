@@ -336,82 +336,6 @@ const CORD = function() {
         document.body.style.filter = '';
     };
 
-    // const tokenizer = function(str, cord_id) {
-    //     let i = 0, token = '', string_opened = false;
-    //     const tokens = [];
-    //     while (str[i] !== undefined) {
-    //         const c = str[i];
-    //         if (!string_opened && c.match(/[a-z0-9_\$\:\#]/)) {
-    //             token += c;
-    //         } else if (!string_opened && c == '.') {
-    //             if (token != '') {
-    //                 tokens.push(token.trim());
-    //                 token = '';
-    //             }
-    //         } else if (!string_opened && ['[', ']'].includes(c)) {
-    //             if (token != '') {
-    //                 tokens.push(token.trim());
-    //                 token = '';
-    //             }
-    //         } else if (!string_opened && ['(', ')'].includes(c)) {
-    //             if (token != '') {
-    //                 tokens.push(token.trim());
-    //                 token = '';
-    //             }
-    //         } else if (!string_opened && [',', ';', '|', '&'].includes(c)) {
-    //             if (token != '') {
-    //                 tokens.push(token.trim());
-    //                 token = '';
-    //             }
-    //         } else if (!string_opened && ["'", '"'].includes(c)) {
-    //             if (token != '') {
-    //                 tokens.push(token.trim());
-    //                 token = '';
-    //             }
-    //             string_opened = true;
-    //         } else if (string_opened && ["'", '"'].includes(c)) {
-    //             string_opened = false;
-    //         } 
-    //         i++;
-    //     }
-    //     if (token != '') tokens.push(token.trim());
-
-    //     return tokens;
-
-    //     // :'( I can do this below because get_indetifier is used during bootstrap process and
-    //     //     during bootstrap the containers are not initialized.
-    //     //     I need to think about this, maybe remake some CORD parts. 
-        
-    //     // const containers_keys = Object.fromEntries(
-    //     //     Object.keys(DATAS).map( k => {return [k, Object.keys(DATAS[k])] })
-    //     // );
-    //     // const valid_tokens = [];
-    //     // if (tokens.length == 1 && containers_keys[cord_id].includes(tokens[0])) {
-    //     //     valid_tokens.push(tokens[0]);
-    //     // } else if (containers_keys[tokens[0]]?.includes(tokens[1])) {
-    //     //     valid_tokens.push(tokens[1]);
-    //     // }
-    //     // return valid_tokens.length > 0 ? valid_tokens : null;
-    // };
-
-    // const get_identifiers = function(str, cord_id) {
-    //     str = decode_htmlentities(str);
-    //     const discard_list = ['_', null, '$'];
-
-    //     const result = str
-    //           .matchAll(/\$\{(.+?)\}/gs)
-    //           .toArray()
-    //           .map(([_, e]) => tokenizer(e, cord_id))
-    //           .flat(Infinity);
-
-    //     // console.log('IDS', result, cord_id)
-
-    //     return result     
-    //         .uniq()
-    //         .map(s => s.trim())
-    //         .filter(v => !(discard_list.includes(v)));
-    // };    
-
     const get_identifiers = function(str, cord_id) {
         str = '\`'+decode_htmlentities(str)+'\`';
         const result = [], discard_list = ['_'];
@@ -457,9 +381,17 @@ const CORD = function() {
             .filter(v => !(discard_list.includes(v)));
     };
     
-    // this.x = get_identifiers;
-    
-    const cord_eval = function(str, context) {
+    const cord_eval = function(str, context, as_string = true)  {
+        const replaces = str.matchAll(/#\{(.+?)\}/gs)
+            .toArray()
+            .map(([t, e]) => [t, '$[\''+e.replace(/:/g, '\'][\'')+'\']'])
+
+        str = replaces.reduce((s, [m, n]) => s.replace(new RegExp(m, 'g'), n), str);
+        
+        if (as_string) {
+            str = '`'+str+'`';
+        }
+
         const sandbox = new Proxy(context, {
             get(target, prop) {
                 if (prop in target) {
@@ -475,32 +407,8 @@ const CORD = function() {
             }
         });
 
-        const replaces = str.matchAll(/#\{(.+?)\}/gs)
-            .toArray()
-            .map(([t, e]) => [t, '$[\''+e.replace(/:/g, '\'][\'')+'\']'])
-
-        str = replaces.reduce((s, [m, n]) => s.replace(new RegExp(m, 'g'), n), str);
-
-        const _sandbox = Object.fromEntries(
-            Object.entries(sandbox).filter( ([k,_]) => k[0] != '#')
-        );
-        const keys = Object.keys(_sandbox);
-        const values = Object.values(_sandbox);
-        const str_decoded = decode_htmlentities(str);
-        // console.log(str)
-        const evaluator = new Function(...keys,
-            `with (this) { return \`${str_decoded}\`; }`
-        );
-
-        try {
-            // return evaluator.bind(window).apply(sandbox, values);
-            return evaluator.bind(sandbox).apply(sandbox, values);
-        } catch(e) {
-            console.error(`Error evaluating string: `, e);
-            return str;
-        }
+        return eval('with (sandbox) { '+str+' }');
     };
-
     const get_text_nodes = function(elem) {
         const cid = elem.getAttribute('cord-id');
         const children = [];
@@ -693,7 +601,7 @@ const CORD = function() {
                 });
             });
 
-            // cordForeach store for loops data templates associate to a field
+            // cordForeach store foreach loops data templates associate to a field
             elem.cordForeach = {};
             elem.querySelectorAll('template[foreach]').forEach( tpl => {
                 tpl.cordContainer = cord_id;                
@@ -829,7 +737,6 @@ const CORD = function() {
     /////////////////////////////////////////////////////////////////////////////////
     // Render
     /////////////////////////////////////////////////////////////////////////////////
-
     const render_foreachs = function(cord_id, tpls, obj) {
         // TODO: cord_id is not more needed because is stored in tpl
         tpls.forEach( tpl => {
@@ -839,6 +746,16 @@ const CORD = function() {
             const parent = tpl.parentElement;
             const r_var = tpl.getAttribute('item');
             const foreach_field = tpl.getAttribute('foreach');
+
+            obj = new Proxy(obj, {
+                get(target, prop, _) {
+                    if (target.hasOwnProperty(prop)) {
+                        return target[prop];
+                    } else {
+                        return cord_eval(prop, target, false);
+                    }
+                }
+            });
 
             obj = !obj[foreach_field] ? DATAS[cord_id] : obj;
 
@@ -851,12 +768,17 @@ const CORD = function() {
             }
             
             arr.forEach( (r, i) => {
+                const row = { [r_var]: r, [r_var+'_i']: i };
+                render_ifs(
+                    cord_id,
+                    tpl.content.querySelectorAll('template[if]'),
+                    row
+                );
                 render_foreachs(
                     cord_id,
                     tpl.content.querySelectorAll('template[foreach]'),
-                    {[r_var]: r}
+                    row
                 );
-                const row = { [r_var]: r, [r_var+'_i']: i };
                 const cloned_tpl = tpl.cloneNode(true);
                 cloned_tpl.content.querySelectorAll('template').forEach( n => n.remove() );
                 const env = {
@@ -887,7 +809,7 @@ const CORD = function() {
         });
     };
 
-    const render_ifs = function(cord_id, tpls) {
+    const render_ifs = function(cord_id, tpls, obj = {}) {
         // TODO: cord_id is not more needed because is stored in tpl
         tpls.forEach( tpl => {
             cord_id = tpl.cordContainer || cord_id;
@@ -895,7 +817,7 @@ const CORD = function() {
             if (tpl?.nextElementSibling?.is_cordif)
                 tpl.nextElementSibling.remove();
                     
-            const env = {...DATAS[cord_id], ...{$: DATAS, ROOT: DATAS}};
+            const env = {...obj, ...DATAS[cord_id], ...{$: DATAS, ROOT: DATAS}};
             const if_exp = tpl.getAttribute('if');
             const exp_eval = eval("'"+cord_eval(if_exp, env)+"'");
 
@@ -1230,20 +1152,26 @@ const CORD = function() {
     };
 
     this.get = function(path) {
-        const [cord_id, ...field] = path.split(':');
-        return field.reduce( (o, f) => o[f], this.$[cord_id]);
+        const [cord_id, ...fields] = path.split(':');
+        return fields.reduce( (o, f) => o[f], this.$[cord_id]);
     };
 
     this.set = function(path, value, commit = true) {
-        const [cord_id, field] = path.split(':');
-        this.$[cord_id][field] = value;
+        const [cord_id, ...fields] = path.split(':');
+        const last = fields.pop();
+        const obj = fields.reduce( (o, f) => o[f], this.$[cord_id]);
+        obj[last] = value;
+        const field = (fields.length > 0 ? [fields.shift()] : [last]) 
         if (commit) render_container_field(cord_id, field);
     };
 
     // useful for boolean fields
     this.toggle = function(path, commit = true) {
-        const [cord_id, field] = path.split(':');
-        this.$[cord_id][field] = !this.$[cord_id][field];
+        const [cord_id, ...fields] = path.split(':');
+        const last = fields.pop();
+        const obj = fields.reduce( (o, f) => o[f], this.$[cord_id]);
+        obj[last] = !obj[last];
+        const field = (fields.length > 0 ? [fields.shift()] : [last]) 
         if (commit) render_container_field(cord_id, field);
     };
 
@@ -1494,23 +1422,3 @@ customElements.define("cord-template", CordTemplate);
 /////////////////////////////////////////////////////////////////////////////////
 const $CORD = new CORD();
 
-
-/* garbage:
-            // try {
-            //     tmp = window.eval(`
-            //     (function(){
-            //     const v = new Proxy({}, {
-            //         has(target, prop) { return true; },
-            //         get(target, prop) { return target[prop]; }
-            //     })
-            //     with(v) {
-            //         ${js};
-            //     }
-            //     return Object.assign({}, v);
-            //     })()
-            //     `);
-            //     DATAS[cord_id] = {...tmp, ...DATAS[cord_id]};
-            // } catch(e){
-            //     console.log('Error in cord-script tag content: ', e);
-            // }
-*/

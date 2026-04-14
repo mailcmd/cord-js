@@ -1,0 +1,47 @@
+[
+    {
+        "text": "Menu1",
+        "open": false,
+        "childs": [
+            {
+                "text": "Menu 1 - Item1"
+            },
+            {
+                "text": "Menu 1 - Item2"
+            },
+            {
+                "text": "Menu 1 - Item3"
+            }
+        ]
+    },
+    {
+        "text": "Menu2",
+        "open": false,
+        "childs": [
+            {
+                "text": "Menu 2 - Item1"
+            },
+            {
+                "text": "Menu 2 - Item2"
+            },
+            {
+                "text": "Menu 2 - Item3"
+            }
+        ]
+    },
+    {
+        "text": "Menu3",
+        "open": false,
+        "childs": [
+            {
+                "text": "Menu 3 - Item1"
+            },
+            {
+                "text": "Menu 3 - Item2"
+            },
+            {
+                "text": "Menu 3 - Item3"
+            }        
+        ]
+    }
+]     

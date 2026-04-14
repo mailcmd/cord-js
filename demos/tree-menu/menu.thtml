@@ -1,0 +1,20 @@
+<cord-template cord-tpl-id="tpl-menu">
+<ul>
+  :foreach item in root :do
+    <li>
+      <a href="#" onclick="$CORD.toggle('menu:root:${item_i}:open')">
+        ${item.text}
+      </a>
+        :if item.open :do
+        <ul>
+          :foreach subitem in item.childs :do
+          <li>
+            <a href="#">${subitem.text}</a>
+          </li>
+          :endforeach
+        </ul>
+        :endif
+    </li>    
+  :endforeach
+</ul>
+</cord-template>
