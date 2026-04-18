@@ -25,6 +25,11 @@ Number.prototype.mul = function(n) {return this * n};
 Number.prototype.div = function(n) {return this / n};
 Number.prototype.mod = function(n) {return this % n};
 
+function io(a) {
+    console.log('IO LOG:', a);
+    return a;
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 // CORD EXTERNAL AUXILIARS UTILS
 /////////////////////////////////////////////////////////////////////////////////
@@ -727,6 +732,11 @@ const CORD = function() {
             }
         });
 
+        // create trash element
+        $this.draft = document.createElement('span');
+        $this.draft.style.display = 'none';
+        document.body.appendChild($this.draft);
+
         await process_cord_tags();
 
         $this.ready = true;
@@ -998,7 +1008,7 @@ const CORD = function() {
     this.blur_page = blur_page;
     this.unblur_page = unblur_page;
     
-    this.add_template = async function(urls) {
+    this.load_template = async function(urls) {
         urls = typeof urls == 'string' ? [urls] : urls;
         const elem = document.createElement('cord-load-templates');
         elem.innerHTML = urls.join('\n');
@@ -1006,7 +1016,7 @@ const CORD = function() {
         await load_templates();
     };
 
-    this.add_container = async function(url, destination) {
+    this.load_container = async function(url, destination) {
         destination = typeof destination == 'string'
             ? document.querySelector(destination)
             : destination
@@ -1024,8 +1034,19 @@ const CORD = function() {
         }
     };
 
-    this.process_new_containers = process_containers;
-
+    /*
+      config = {
+        id: <string>,          // the cord-id value 
+        tpl_ref: <string>,     // the cord-tpl-ref value
+        tpl_url: <string,      // if the template is still not loaded, you can load passing url
+        map: <string=key1:value1|key2:value2...>
+        html: <string>         // if is not defined tpl you can pass the html contain here
+        datas: <object>        // new container values
+        datas_url: <string>    // if you do not pass 'datas' can pass datas_url the get datas
+        parent: <dom_element>  // Element where the new container will be appended. If not defined
+                               // default is draft element
+      }
+     */
     this.create_container = async function(config) {
         const config_error = item => {
             throw new Error(`New container config error, missing item '${item}'`);
@@ -1038,14 +1059,17 @@ const CORD = function() {
         }
 
         const cord_tpl_ref = config?.tpl_ref;
+        const cord_tpl_url = config?.tpl_url;
         const cord_map = config?.map;
         const html = config?.html;
         const datas = config?.datas;
-        const parent = config?.parent ?? document.body;
+        const datas_url = config?.datas_url;
+        const parent = config?.parent ?? this.draft;
 
         const container = document.createElement('cord-container');
         container.setAttribute('cord-id', cord_id);
-        if (cord_tpl_ref) container.setAttribute('cord-tpl-ref', cord_tpl_ref);
+        if (cord_tpl_url) await this.load_template(cord_tpl_url)
+        if (cord_tpl_ref) container.setAttribute('cord-tpl-ref', cord_tpl_ref);                
         if (cord_map) container.setAttribute('cord-map', cord_map);
         if (html) container.innerHTML = html;
 
@@ -1054,6 +1078,9 @@ const CORD = function() {
         await process_containers();
 
         if (datas) {
+            this.update(cord_id, datas)
+        } else if (datas_url) {
+            const datas = JSON.parse(await this.fetch(datas_url));
             this.update(cord_id, datas)
         } else {
             this.refresh(cord_id);
@@ -1070,6 +1097,8 @@ const CORD = function() {
         delete DATAS[cord_id];
         delete PROXIES[cord_id];
     };
+
+    this.process_new_containers = process_containers;
 
     this.refresh = function(cord_id) {
         this.update(cord_id);
@@ -1153,7 +1182,12 @@ const CORD = function() {
 
     this.get = function(path) {
         const [cord_id, ...fields] = path.split(':');
-        return fields.reduce( (o, f) => o[f], this.$[cord_id]);
+        if (this.$[cord_id]) {
+            return fields.reduce( (o, f) => o[f], this.$[cord_id]);    
+        } else {
+            console.warn(`Do not exists container '${cord_id}'!`);
+            return undefined;
+        }
     };
 
     this.set = function(path, value, commit = true) {
