@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Example 1</title>
+  </head>
+  <body>
+    <div cord-id="example">
+      <div style="background-color: rgb(${counter * 10}, ${counter * 10}, ${counter * 10});
+                  color: contrast-color(rgb(${counter * 10}, ${counter * 10}, ${counter * 10}));">
+        <button onclick="$CORD.update('example', 'counter', ${counter}-1)">Dec -</button>
+        ${counter}
+        <button onclick="$CORD.update('example', 'counter', ${counter}+1)">Inc +</button>
+      </div>
+    </div>
+    <script>
+     window.addEventListener('cordready', function(e) {
+         const config = {
+             createGlobals: false,
+             strict: false,
+             containers: {
+                 example: {
+                     counter: 0
+                 }
+             }
+         };
+         $CORD.init(config);
+     });      
+    </script>
+    <script src="../../cord.js"></script>
+  </body>
+</html>

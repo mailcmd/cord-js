@@ -18,7 +18,7 @@
    - [x] Create a custom element cord-container to invoke a cord-template 
    - [ ] cord-style tag to load css and create superclasses.
    - [x] foreach and if parser while loop make security exit (max nested depth)
-   - [ ] If inside foreach 
+   - [x] If inside foreach 
    - [x] Attributes type 'disabled' or 'checked'
    - [ ] Special attribute 'render-onchange' to force render on field change 
    
@@ -45,128 +45,209 @@ ${<local-field>}                         # render local field of the container
 #{<cord-id>:<field>}                     # way of use foreing field
 ```
 
+# Tutorial
 
-## Example
 
-This is a typical index page for using cord:
+## Example 1
+Let's start with a simple `index.html`:
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <title>My title</title>
-
-  <link rel="stylesheet" type="text/css" href="..."/>
-  <link rel="stylesheet" type="text/css" href="..."/>
-  ... 
-</head>
-
-<body>
-  <!-- main content start -->
-  
-  [HERE CORD CONTENT]
-  
-  <!-- main content end -->
-  
-  <script src="cord-js"></script>
-  
-  <script type="text/javascript" src="..."></script>
-  <script type="text/javascript" src="..."></script>
-  ...
-</body>
-
+  <head>
+    <title>My title</title>
+  </head>
+  <body>
+    <div cord-id="example">
+      <div style="background-color: rgb(${counter * 10}, ${counter * 10}, ${counter * 10});
+                  color: contrast-color(rgb(${counter * 10}, ${counter * 10}, ${counter * 10}));">
+        <button onclick="$CORD.update('example', 'counter', ${counter}-1)">Dec -</button>
+        ${counter}
+        <button onclick="$CORD.update('example', 'counter', ${counter}+1)">Inc +</button>
+      </div>
+    </div>
+    <script>
+     window.addEventListener('cordready', function(e) {
+         const config = {
+             createGlobals: false,
+             strict: false,
+             containers: {
+                 example: {
+                     counter: 0
+                 }
+             }
+         };
+         $CORD.init(config);
+     });
+    </script>
+    <script src="cord.js"></script>
+  </body>
 </html>
 
 ```
 
-Some example cord content could be:
+What happen here? CORD did the bootstrap process and then dispach `cordready` event. Inside the 
+event we call `$CORD.init(...)` function. What do you learn from this? 
+1- We manage a CORD app using the `$CORD` object. 
+2- `init` is a mandatory function to start to operate with $CORD.
+3- In `config` const we define some settings and containers. What is a container? It is the main
+   unit of CORD. Inside a container you hava access to a local variables (but also you can access
+   other containers variables - more about this below).
+4- In this example we defined a container named `example` with a local variable `counter` 
+   initialized in zero. 
+5- During init CORD renderize the container content.
+6- You can change interactively the value of a local variable using function `update(...)`.
+
+**Some notes**:
+CORD always try to render the minimal fragment possible of a container, not the complete container.
+Using `update` is not the only way to change variable content, you can do the same with `set` 
+function (more below).
+
+Let's make some improvment now...
+
+## Example 2
 ```html
-<cord-template cord-tpl-id="list">
-  <div>
-    <input placeholder="Task description..." size="50" id="desc" />
-    <button onclick="list_add_item(desc.value, '%cord-id%', '%list%')">
-      Add
-    </button>
-  </div>
-  <ul>
-    :foreach item in %list% :do
-    <li>
-      <span>${item.desc}</span>
-      <button onclick="list_remove_item(${i}, '%cord-id%', '%list%')">
-        Remove
-      </button>
-    </li> 
-    :endforeach
-  </ul>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My title</title>
+  </head>
+  <body>
+    <div cord-id="example">
+      <div style="background-color: rgb(${counter * 10}, ${counter * 10}, ${counter * 10});
+                  color: contrast-color(rgb(${counter * 10}, ${counter * 10}, ${counter * 10}));">
+        <button onclick="$CORD.set('example:counter', ${counter}-1)">Dec -</button>
+        ${counter}
+        <button onclick="$CORD.set('example:counter', ${counter}+1)">Inc +</button>
+      </div>
+    </div>
+    <script>
+    ...
+    </script>
+    <script src="cord.js"></script>
+  </body>
+</html>
 
-  <cord-script>
-  function list_add_item(text, cord_id, list) {
-    if (!text.trim()) return; 
-    $CORD.update_object(
-      cord_id,
-      list,
-      {action: 'push', datas: [{desc: text}]}
-    );
-    desc.value='';
-    desc.focus();
-  };
+```
+What changed? Now we used `set` instead of `update`. The function `update` is more useful when you
+need to update many variables in one step. For example, if the container `example` were this: 
 
-  function list_remove_item(i, cord_id, list) {
-    $CORD.update_object(cord_id, list, {action: 'splice', datas: [i, 1]});
-  }; 
-  </cord-script>
-  
-</cord-template>
+```json
+...
+containers: {
+    example: {
+        counter: 0,
+        color: 'red'
+    }
+}
+...
+```
+you could call `update` in this way:
+```javascript
+$CORD.update('example', {counter: 10, color: 'blue});
+```
 
-<cord-container cord-id="tasks-list" cord-tpl-ref="list" cord-map="list:tasks">
-</cord-container>
+`set` function is useful for atomic changes. The way you reference a variable is with a kind of 
+hierarchical string domain: `"<container_name>:<local_varname>"`. But this is more useful yet! 
+If you have:
+```json
+...
+containers: {
+    example: {
+        counters: [{c: 0}, {c: 99}]
+    }
+}
+...
+```
+you could do this:
+```javascript
+$CORD.set('example:counters:0:c', 1000);
+```
 
-<cord-container cord-id="counter">
-  <button onclick="$CORD.$.counter.$value-=1">&lt; Substract 10 </button>
-  ${value * 10}
-  <button onclick="$CORD.$.counter.$value+=1">Add 10 &gt;</button>
-</cord-container>
+Of course you also count with `get` function:
+```javascript
+$CORD.get('example:counters:0:c'); // return: 1000 
+$CORD.get('example:counters:1:c'); // return: 99
+```
+
+The `set` function count with a third parameters that allow to instruct CORD to render after set
+the value. By default it is true. 
+
+## Example 3
+Now, what happen if we want to have many counters? Should we repeat the 2 buttons and the counter 
+many times? No, in CORD you can use templates:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My title</title>
+  </head>
+  <body>
+    <cord-template cord-tpl-id="tpl-counter">
+      <div>
+        <div style="background-color: rgb(${counter * 10}, ${counter * 10}, ${counter * 10});
+                    color: contrast-color(rgb(${counter * 10}, ${counter * 10}, ${counter * 10}));">
+          <button onclick="$CORD.update('%cord-id%', 'counter', ${counter}-1)">Dec -</button>
+          ${counter}
+          <button onclick="$CORD.update('%cord-id%', 'counter', ${counter}+1)">Inc +</button>
+        </div>
+      </div>
+    </cord-template>
+    
+    <cord-container cord-id="example1" cord-tpl-ref="counter">
+    </cord-container>
+    
+    <cord-container cord-id="example2" cord-tpl-ref="counter">
+    </cord-container>
+
+    <script>
+     window.addEventListener('cordready', function(e) {
+         const config = {
+             createGlobals: false,
+             strict: false,
+             containers: {
+                 example1: {
+                     counter: 10
+                 },
+                 example2: {
+                     counter: 20
+                 },
+             }
+         };
+         $CORD.init(config);
+     });
+    </script>
+    <script src="cord.js"></script>
+  </body>
+</html>
 
 ```
 
-As you can be there is some cord-x tags used to deploy content in the page. 
+Notice the use of `%cord-id%` map field. Using it you make sure that every container that 
+implement this template will reference itself. In fact you can pass more mapped fields using the
+`cord-map` attribute in `cord-container` tag:
 
-### cord-template 
-Used to create reusable components. You must set a cord template name using the attribute 
-`cord-tpl-id` and inside the template you can use normal html tags, varnames or expression in 
-the js format `${...}`, and some control structures like `:if/:else` or `:foreach/:endforeach` 
-(these control structures are in an early state for now, they do not allow nested statements yet).
-
-Inside a template you can use expression like `%somename%` (mapped object). With these expressions the template
-receive params from outside. More about mapping outside object below. 
-
-### cord-script
-Inside `cord-template` you can define one or more `cord-script` to put the js code useful for the 
-template. 
-
-### cord-container 
-Here is where the content will be deployed. It is important to set the attribute `cord-id` because
-every cord action over a container will be referenced with this id. 
-
-You can define html content just directly inside the cord-container or set the attribute 
-`cord-tpl-ref` with a template id. If you reference a template the template content will deployed
-inside the container. 
-
-When you reference a template also can pass to the template params as maps. This allow maps 
-container objects to be expanded inside the template replacing mapped object (see `%somename%` 
-above). 
-
-For all templates always exists a default map that expand the value of the `cord-id` attribute in 
-the mapped object `%cord-id%`. 
-
-The way to pass maps to the template is using the `cord-map` attribute. Example: 
 ```html
-<cord-container ... cord-map="list:tasks" ...>
+<cord-container cord="example1" cord-tpl-ref="counter" cord-map="title:I am example 1|var2:anything">
+...
 ```
-In this example the container object `tasks` will replace any use of `%list%` inside the template.
+Then in your template you can use `%title%` and `%var2%` and wait that the render make the 
+sustitution. 
 
-## Using the js library
-Just including `cord.js` it is intantiated `$CORD` object. CORD has a small API: 
+## Example 4
 
+Special attributes :<attr> 
+
+## Example 5
+
+:if 
+
+## Example 6
+
+:foreach
+
+
+## The CORD API 
 ### `$CORD.init(config)`
 The config is in the form: 
 
@@ -287,9 +368,6 @@ Well, not much to explain, just refresh (re-render) all fields of each container
 
 `################################################################################################`
 
-## Directory Struct
 
-  
- 
 ## Installation
 

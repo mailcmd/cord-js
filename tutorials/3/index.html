@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My title</title>
+  </head>
+  <body>
+    <cord-template cord-tpl-id="tpl-counter">
+      <div>
+        <div style="background-color: rgb(${counter * 10}, ${counter * 10}, ${counter * 10});
+                    color: contrast-color(rgb(${counter * 10}, ${counter * 10}, ${counter * 10}));">
+          <button onclick="$CORD.update('%cord-id%', 'counter', ${counter}-1)">Dec -</button>
+          ${counter}
+          <button onclick="$CORD.update('%cord-id%', 'counter', ${counter}+1)">Inc +</button>
+        </div>
+      </div>
+    </cord-template>
+    
+    <cord-container cord-id="example1" cord-tpl-ref="tpl-counter">
+    </cord-container>
+    
+    <cord-container cord-id="example2" cord-tpl-ref="tpl-counter">
+    </cord-container>
+
+    <script>
+     window.addEventListener('cordready', function(e) {
+         const config = {
+             createGlobals: false,
+             strict: false,
+             containers: {
+                 example1: {
+                     counter: 10
+                 },
+                 example2: {
+                     counter: 20
+                 },
+             }
+         };
+         $CORD.init(config);
+     });
+    </script>
+    <script src="../../cord.js"></script>
+  </body>
+</html>
