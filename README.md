@@ -88,13 +88,13 @@ Let's start with a simple `index.html`:
 What happen here? CORD did the bootstrap process and then dispach `cordready` event. Inside the 
 event we call `$CORD.init(...)` function. What do you learn from this? 
 1. We manage a CORD app using the `$CORD` object. 
-2. `init` is a mandatory function to start to operate with $CORD.
+2. `init` is a mandatory function to start to operate with CORD.
 3. In `config` const we define some settings and containers. What is a container? It is the main
    unit of CORD. Inside a container you hava access to a local variables (but also you can access
    other containers variables - more about this below).
 4. In this example we defined a container named `example` with a local variable `counter` 
    initialized in zero. 
-5. During init CORD renderize the container content.
+5. During init, CORD renderize the container content.
 6. You can change interactively the value of a local variable using function `update(...)`.
 
 **Some notes**:
@@ -102,7 +102,7 @@ CORD always try to render the minimal fragment possible of a container, not the 
 Using `update` is not the only way to change variable content, you can do the same with `set` 
 function (more below).
 
-Let's make some improvment now...
+Let's make some improvement now...
 
 ## Example 2
 ```html
@@ -246,6 +246,14 @@ Special attributes :<attr>
 
 :foreach
 
+## Example 7 
+
+Accesing other containers fields. 
+
+## Example 8
+
+Accesing fields in the bad a ugly way. 
+$CORD.$... 
 
 ## The CORD API 
 ### `$CORD.init(config)`
