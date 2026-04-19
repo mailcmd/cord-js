@@ -87,15 +87,15 @@ Let's start with a simple `index.html`:
 
 What happen here? CORD did the bootstrap process and then dispach `cordready` event. Inside the 
 event we call `$CORD.init(...)` function. What do you learn from this? 
-1- We manage a CORD app using the `$CORD` object. 
-2- `init` is a mandatory function to start to operate with $CORD.
-3- In `config` const we define some settings and containers. What is a container? It is the main
+1. We manage a CORD app using the `$CORD` object. 
+2. `init` is a mandatory function to start to operate with $CORD.
+3. In `config` const we define some settings and containers. What is a container? It is the main
    unit of CORD. Inside a container you hava access to a local variables (but also you can access
    other containers variables - more about this below).
-4- In this example we defined a container named `example` with a local variable `counter` 
+4. In this example we defined a container named `example` with a local variable `counter` 
    initialized in zero. 
-5- During init CORD renderize the container content.
-6- You can change interactively the value of a local variable using function `update(...)`.
+5. During init CORD renderize the container content.
+6. You can change interactively the value of a local variable using function `update(...)`.
 
 **Some notes**:
 CORD always try to render the minimal fragment possible of a container, not the complete container.
