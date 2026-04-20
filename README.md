@@ -21,6 +21,7 @@
    - [x] If inside foreach 
    - [x] Attributes type 'disabled' or 'checked'
    - [ ] Special attribute 'render-onchange' to force render on field change 
+   - [ ] new CORD(...) -> Pass a list of templates to load previous to bootstram
    
 
 ## WEBSOCKET and EVENTSOURCE
@@ -254,6 +255,13 @@ Accesing other containers fields.
 
 Accesing fields in the bad a ugly way. 
 $CORD.$... 
+
+## Example 9
+Loading templates: with tags or as args passed to new CORD(...).
+Also dynamic load. 
+
+## Example 10
+Dynamic containers creation...
 
 ## The CORD API 
 ### `$CORD.init(config)`
