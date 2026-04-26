@@ -24,7 +24,8 @@
    - [ ] new CORD(...) -> Pass a list of templates to load previous to bootstram
    - [ ] <cord-script> tag, work on local functions and vars. Also try containers vars as local var.
    - [ ] 'get_indentifier' function is a piece of SHIT, you need to remake this function from zero.
-   - [ ] Inside a container, not needed to use $CORD.$.<cont_id>.<prop> to modify, just <prop>
+   - [ ] Inside a container, not needed to use $CORD.$.<cont_id>.<prop> to modify, just <prop>.
+   - [ ] :bind special attr. Usable to join tag property with a local var. See svelte 'bind'.
          
 
 ## WEBSOCKET and EVENTSOURCE
