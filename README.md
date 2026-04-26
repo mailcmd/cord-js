@@ -22,7 +22,10 @@
    - [x] Attributes type 'disabled' or 'checked'
    - [ ] Special attribute 'render-onchange' to force render on field change 
    - [ ] new CORD(...) -> Pass a list of templates to load previous to bootstram
-   
+   - [ ] <cord-script> tag, work on local functions and vars. Also try containers vars as local var.
+   - [ ] 'get_indentifier' function is a piece of SHIT, you need to remake this function from zero.
+   - [ ] Inside a container, not needed to use $CORD.$.<cont_id>.<prop> to modify, just <prop>
+         
 
 ## WEBSOCKET and EVENTSOURCE
    - [x] Define format for direct server update of cord_containers
