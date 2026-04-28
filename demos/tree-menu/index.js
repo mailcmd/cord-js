@@ -4,6 +4,9 @@ const config = {
     containers: {
         menu: {
             root: []
+        },
+        test: {
+            counter: 0
         }
     }
 };

@@ -12,6 +12,20 @@
     menu.thtml
   </cord-load-templates>
   
+  <cord-container cord-id="test">
+    <button on:click="$self.$counter++">
+      Clicked: ${counter}
+    </button>
+    <button on:click="$self.add()">
+      Clicked: ${counter}
+    </button>
+    <cord-script>
+      $self.add = () => {
+        $self.$counter++;
+      }
+    </cord-script>
+  </cord-container>
+  
   <cord-container cord-id="menu" cord-tpl-ref="tpl-menu"></cord-container>
 
   <script src="cord.js"></script>
