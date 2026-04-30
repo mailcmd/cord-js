@@ -3,6 +3,7 @@ const config = {
     strict: true,
     containers: {
         menu: {
+            value: 999,
             root: []
         },
         test: {

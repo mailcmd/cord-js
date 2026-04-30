@@ -13,15 +13,18 @@
   </cord-load-templates>
   
   <cord-container cord-id="test">
-    <button on:click="$self.$counter++">
-      Clicked: ${counter}
-    </button>
-    <button on:click="$self.add()">
-      Clicked: ${counter}
-    </button>
+    <span>
+      <button on:click="$global.menu.$value++" a="${#menu:value}">
+        Clicked: ${counter}
+      </button>
+      <button on:click="$self.add()"  a="${$global.menu.value}">
+        Clicked: #{menu:value} ${$global.menu.value}
+      </button>
+    </span>
     <cord-script>
       $self.add = () => {
         $self.$counter++;
+        $global.menu.$value++;
       }
     </cord-script>
   </cord-container>
@@ -30,6 +33,7 @@
 
   <script src="cord.js"></script>
   <script src="index.js"></script>
+  <script src="lexer.js"></script>
 </body>
 
 </html>
