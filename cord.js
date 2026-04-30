@@ -381,68 +381,12 @@ const CORD = function() {
                 .replace(/\[['"](.+?)['"]\]/g, '.$1');
 
             if (identifier[0] == '#') {
-                const [p1, p2] = identifier.replace(/[#\$]/g, '').split(/[\.\:]/);
+                const [p1, p2] = identifier.replace(/[#\$]/g, '').split(/[\[\.\:]/);
                 return '#' + p1 + ':' + p2;
             } else {
                 return identifier.replace(/\$/g, '').split('.')[0];
             }
         });
-    };
-
-    const lexer = function(str) {
-        const separators = [';', ',', '+', '-', '*', '/', '%', ')', '|', '&', '%'];
-        let i = 0, current_lexema = '', string_opener = '';
-        const lexemas = [];
-
-        str = str.replace(/ /g, '');
-
-        while (i < str.length) {
-            // end of identifier, save it
-            if (string_opener == '' && separators.includes(str[i])) {
-                if (current_lexema.length > 0) {
-                    lexemas.push(current_lexema);
-                    current_lexema = '';
-                }
-
-                // end of identifier but is a function, do not save it
-            } else if (string_opener == '' && str[i] == '(') {
-                if (current_lexema.length > 0) {
-                    current_lexema = '';
-                }
-
-                // open a string
-            } else if (string_opener == '' && ['"', "'"].includes(str[i])) {
-                if (current_lexema.length > 0) {
-                    console.warn('Unexpected start of string:', str, '(position: '+i+')')
-                } else {
-                    string_opener = str[i];
-                }
-                current_lexema = '';
-
-                // end of "..." string
-            } else if (string_opener == '"' && str[i] == '"') {
-                string_opener = '';
-                current_lexema = '';
-
-                // end of '...' string
-            } else if (string_opener == "'" && str[i] == "'") {
-                string_opener = '';
-                current_lexema = '';
-
-                // start of identifier
-            } else if (current_lexema.length == 0 && str[i].match(/[a-zA-Z\_\$\#]/)) {
-                current_lexema += str[i];
-
-                // rest of the identifier
-            } else if (current_lexema.length > 0) {
-                current_lexema += str[i];
-            }
-
-            i++;
-        }
-        if (current_lexema.length > 0) lexemas.push(current_lexema);
-
-        return lexemas;
     };
 
    /*
@@ -488,7 +432,85 @@ const CORD = function() {
        $.main.grid['row-3'].col2        -> #main:grid
        $global.main.grid['row-3'].col2  -> #main:grid
 
-   */
+    */
+    const lexer = function(str) {
+        const separators = [';', ',', '+', '-', '*', '/', '%', ')', '|', '&', '%'];
+        let i = 0, current_lexema = '', string_opener = '';
+        const lexemas = [];
+
+        str = str.replace(/ /g, '');
+
+        while (i < str.length) {
+            // end of identifier, save it
+            if (string_opener == '' && separators.includes(str[i])) {
+                if (current_lexema.length > 0) {
+                    lexemas.push(current_lexema);
+                    current_lexema = '';
+                }
+                
+                // end of identifier but is a function, do not save it
+            } else if (string_opener == '' && str[i] == '(') {
+                if (current_lexema.length > 0) {
+                    current_lexema = '';
+                }
+
+                // open a string inside a [...], is a lexema 
+            } else if (string_opener == '' && str[i] == '[') {
+                if (['"', "'"].includes(str[i+1])) {
+                    let j = 2;
+                    while (!['"', "'"].includes(str[j]) && str[j]) {
+                        current_lexema += str[j];
+                        j++;
+                    }
+                    lexemas.push(current_lexema);
+                    current_lexema = '';
+                    i = i + j;
+                } else if (current_lexema.length > 0) {
+                    lexemas.push(current_lexema);
+                    current_lexema = '';
+                }
+
+            } else if (string_opener == '' && str[i] == ']') {
+                if (current_lexema.length > 0) {
+                    lexemas.push(current_lexema);
+                    current_lexema = '';
+                }
+                
+                // open a string
+            } else if (string_opener == '' && ['"', "'"].includes(str[i])) {
+                if (current_lexema.length > 0) {
+                    console.warn('Unexpected start of string:', str, '(position: '+i+')')
+                } else {
+                    string_opener = str[i];
+                }
+                current_lexema = '';
+
+                // end of "..." string
+            } else if (string_opener == '"' && str[i] == '"') {
+                string_opener = '';
+                current_lexema = '';
+
+                // end of '...' string
+            } else if (string_opener == "'" && str[i] == "'") {
+                string_opener = '';
+                current_lexema = '';
+
+                // start of identifier
+            } else if (current_lexema.length == 0 && str[i].match(/[a-zA-Z\_\$\#]/)) {
+                current_lexema += str[i];
+
+                // rest of the identifier
+            } else if (current_lexema.length > 0) {
+                current_lexema += str[i];
+            }
+
+            i++;
+        }
+        if (current_lexema.length > 0) lexemas.push(current_lexema);
+
+        return lexemas;
+    };
+    this.x = lexer;
     const get_identifiers = function(str) {
         // console.log(str);
         str = decode_htmlentities(str);
@@ -506,57 +528,17 @@ const CORD = function() {
             .flat()
             .uniq()
     };
-    // const get_identifiers = function(str, cord_id) {
-    //     str = '\`'+decode_htmlentities(str)+'\`';
-    //     const result = [], discard_list = ['_'];
-
-    //     // convert #{container:field} -> #container:field
-    //     result.push(
-    //         ...(str
-    //             .matchAll(/#\{(.+?)\}/gs)
-    //             .toArray()
-    //             .map(([_, e]) => '#'+e))
-    //     );
-    //     str = str.replace(/#\{(.+?)\}/gs, '_');
-
-    //     _str = str
-    //         .matchAll(/\$\{(.+?)\}/gs)
-    //         .toArray()
-    //         .map(([_, e]) => e);
-
-    //     // console.log('STR', _str);
-    //     const local_handler = {
-    //         get(target, prop, x) {
-    //             if (typeof prop == 'symbol') return (x)=>0;
-    //             if (typeof prop == 'string') result.push(prop);
-    //             if (target.xref && !target.$) {
-    //                 return ()=>0;
-    //             } else {
-    //                 return new Proxy({xref: target, $: prop=='$'?true:false}, local_handler);
-    //             }
-    //         },
-    //         has(target, prop) {
-    //             return true;
-    //         }
-    //     };
-    //     sandbox =  new Proxy({eval: window.eval}, local_handler);
-    //     const evaluator = new Function(
-    //      `with (this) { return ${str}; }`
-    //     );
-    //     evaluator.bind(sandbox)();
-
-    //     return result
-    //         .uniq()
-    //         .map(s => s.trim())
-    //         .filter(v => !(discard_list.includes(v)));
-    // };
 
     const cord_eval = function(str, context, as_string = true)  {
         // const replaces = str.matchAll(/#\{(.+?)\}/gs)
-        const replaces = str.matchAll(/#([a-zA-Z\_\:\-0-9]+?)[^a-zA-Z\_\:\-0-9]/gs)
-            .toArray()
-              .map(([t, e, x]) => [t.slice(0,-1), '$[\''+e.replace(/:/g, '\'][\'')+'\']'])
-
+        const replaces = str
+              .matchAll(/\$\{[^\}\#]*#((?:[a-z\_\-0-9]+?):(?:[a-z\_\-0-9\:]+))[^\}]*\}/igs)
+              .toArray()
+              .map(([_, e]) => ['#'+e,  global_to_real_var('#'+e)] )
+              // .map(([t, e, x]) => JSON.stringify( [t, '$[\''+e.replace(/:/g, '\'][\'')+'\']'] ))
+              // .uniq()
+              // .map(a => JSON.parse(a))
+        
         str = replaces.reduce((s, [m, n]) => s.replace(new RegExp(m, 'g'), n), str);
 
         if (as_string) {
@@ -760,7 +742,6 @@ const CORD = function() {
                 node.cordContainer = cord_id;
                 get_identifiers(node.cordContent, cord_id).forEach(f => {
                     // if f is a global field
-                    console.log(f)
                     if (f[0] == '#') {
                         const [_cord_id, _field] = f.slice(1).split(':');
                         if (!window.cordGlobalNodes[_cord_id])
@@ -801,7 +782,7 @@ const CORD = function() {
                         if (!window.cordGlobalForeachs[_cord_id][_field])
                             window.cordGlobalForeachs[_cord_id][_field] = new Set();
                         window.cordGlobalForeachs[_cord_id][_field].add(tpl);
-
+                        console.log('#\{'+f.slice(1)+'\}')
                         const re = new RegExp('#\{'+f.slice(1)+'\}', 'gs');
                         const real_var = global_to_real_var(f);
                         tpl.innerHTML = tpl.innerHTML

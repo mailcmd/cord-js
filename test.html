@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tree Menu Demo</title>
+
+  <link rel="stylesheet" type="text/css" href="">
+</head>
+
+<body>
+  <cord-container cord-id="main"></cord-container>
+  <cord-container cord-id="test">
+    <span>
+      <button on:click="$global.main.$counter++" a="${#main:value}">
+        Clicked: ${counter}
+      </button>
+      <button on:click="$self.add()"  a="${$global.main.value}">
+        Clicked: ${#main:value} ${$global.main.value}
+      </button>
+    </span>
+    <cord-script>
+      $self.add = () => {
+        $self.$counter++;
+        $global.main.$value++;
+      }
+    </cord-script>
+
+    <pre>
+      Locals:
+
+      - ${counter}                          -> counter
+        ${$self.counter}                    -> counter
+      - ${list[0].a}                        -> list
+        ${$self.list[0].a}                  -> list
+      - ${grid.row2.col3}                   -> grid
+        ${$self.grid.row2.col3}             -> grid
+      - ${grid['row-3'].col2}               -> grid
+        ${$self.grid['row-3'].col2}         -> grid
+
+     Globals:
+
+     - ${#main:counter}                    -> #main:counter
+       ${$.main.counter}                   -> #main:counter
+       ${$global.main.counter}             -> #main:counter
+     - ${#main:list:0:a}                   -> #main:list
+       ${$.main.list[0].a}                 -> #main:list
+       ${$global.main.list[0].a}           -> #main:list
+     - ${#main:grid:row2:col3}             -> #main:grid
+       ${$.main.grid.row2.col3}            -> #main:grid
+       ${$global.main.grid.row2.col3}      -> #main:grid
+     - ${#main:grid:row-3:col2}            -> #main:grid
+       ${$.main.grid['row-3'].col2}        -> #main:grid
+       ${$global.main.grid['row-3'].col2}  -> #main:grid
+      
+    </pre>
+
+  </cord-container>
+  
+  <script>
+    const config = {
+        createGlobals: false,
+        strict: true,
+        containers: {
+          test: {
+            counter: 0,
+            list: [
+              {a: 1, b: 2},
+              {a: 10, b: 20},
+              {a: 100, b: 200},
+              {a: 1000, b: 2000}
+            ],
+            grid: {
+              row1: {col1: 1, col2: 2, col3: 3},
+              row2: {col1: 10, col2: 20, col3: 30},
+              'row-3': {col1: 10, col2: 20, col3: 30},
+            }
+          },
+          main: {
+            counter: 0,
+            value: 1000,  
+            list: [
+              {a: 1, b: 2},
+              {a: 10, b: 20},
+              {a: 100, b: 200},
+              {a: 1000, b: 2000}
+            ],
+            grid: {
+              row1: {col1: 1, col2: 2, col3: 3},
+              row2: {col1: 10, col2: 20, col3: 30},
+              'row-3': {col1: 10, col2: 20, col3: 30},
+            }
+          }
+        }
+    };
+
+    window.addEventListener('cordready', async function(e) {
+        $CORD.init(config);
+    });
+  </script>
+  <script src="cord.js"></script>
+</body>
+
+</html>

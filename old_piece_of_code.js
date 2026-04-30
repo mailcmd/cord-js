@@ -119,6 +119,53 @@
 // };    
 
 
+    // const get_identifiers = function(str, cord_id) {
+    //     str = '\`'+decode_htmlentities(str)+'\`';
+    //     const result = [], discard_list = ['_'];
+
+    //     // convert #{container:field} -> #container:field
+    //     result.push(
+    //         ...(str
+    //             .matchAll(/#\{(.+?)\}/gs)
+    //             .toArray()
+    //             .map(([_, e]) => '#'+e))
+    //     );
+    //     str = str.replace(/#\{(.+?)\}/gs, '_');
+
+    //     _str = str
+    //         .matchAll(/\$\{(.+?)\}/gs)
+    //         .toArray()
+    //         .map(([_, e]) => e);
+
+    //     // console.log('STR', _str);
+    //     const local_handler = {
+    //         get(target, prop, x) {
+    //             if (typeof prop == 'symbol') return (x)=>0;
+    //             if (typeof prop == 'string') result.push(prop);
+    //             if (target.xref && !target.$) {
+    //                 return ()=>0;
+    //             } else {
+    //                 return new Proxy({xref: target, $: prop=='$'?true:false}, local_handler);
+    //             }
+    //         },
+    //         has(target, prop) {
+    //             return true;
+    //         }
+    //     };
+    //     sandbox =  new Proxy({eval: window.eval}, local_handler);
+    //     const evaluator = new Function(
+    //      `with (this) { return ${str}; }`
+    //     );
+    //     evaluator.bind(sandbox)();
+
+    //     return result
+    //         .uniq()
+    //         .map(s => s.trim())
+    //         .filter(v => !(discard_list.includes(v)));
+    // };
+
+
+
 /* garbage:
             // try {
             //     tmp = window.eval(`
@@ -138,3 +185,4 @@
             //     console.log('Error in cord-script tag content: ', e);
             // }
 */
+
