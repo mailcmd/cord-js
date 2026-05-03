@@ -30,176 +30,6 @@ function io(a) {
     return a;
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-// CORD EXTERNAL AUXILIARS UTILS
-/////////////////////////////////////////////////////////////////////////////////
-
-const foreachsParser = function(str) {
-    const findForeach = function(str, pos) {
-        const pos0 = str.slice(pos).indexOf(':foreach');
-        if (pos0 == -1) return null;
-        return pos + pos0 + 8;
-    };
-
-    const findEndForeach = function(str, pos) {
-        const pos2 = str.slice(pos).indexOf(':endforeach');
-        if (pos2 == -1) return null;
-        return pos + pos2;
-    };
-
-    const extractForEachParts = function(str) {
-        const [[_, item, rows, apply, body]] =
-              str
-              .matchAll(/[\t ]+(.+?)[\t ]+in[\t ]+(.+?)[\t ]+(?:apply:(.+?)[\t ]|):do(.+?)$/sg)
-              .toArray()
-        return [[':foreach' + str + ':endforeach', item, rows, apply, body]];
-    };
-
-    const replaceForeach = function(str, matches) {
-        const replaces = matches
-              .map( ([_, r_var, rows_var, apply, body]) => {
-                  return `
-                  <template foreach="${rows_var}" item="${r_var}" ${apply?'apply="'+apply+'"':''}>
-                    ${body}
-                  </template>
-                  `
-              });
-        return matches
-            .reduce((acc, [str, _a, _b, _c], i) => acc.replace(str, replaces[i]), str);
-    };
-
-    let curpos = 0, pos0, max_depth = 5;
-
-    while (pos0 = findForeach(str, curpos)) {
-        if (max_depth-- == 0) {
-            console.error(`Foreach max depth reached or bad open/close syntax`);
-            return false;
-        }
-        let pos1 = findForeach(str, pos0);
-        let pos2 = findEndForeach(str, pos0);
-
-        if (pos2 === null) {
-            console.error(`Syntax error foreach in pos ${pos0} has no :endforeach`);
-            return false;
-        }
-        // there is nested foreachs
-        if (pos1 !== null && pos1 < pos2) {
-            curpos = pos1 - 8;
-            continue;
-        }
-        // there is not nested foreachs
-        if (pos1 === null || pos2 < pos1) {
-            const matches = extractForEachParts(str.slice(pos0, pos2));
-            str = replaceForeach(str, matches);
-            curpos = 0;
-            continue;
-        }
-    }
-    return str;
-};
-
-const ifsParser = function(str) {
-    const findIf = function(str, pos) {
-        const pos0 = str.indexOf(':if', pos);
-        if (pos0 == -1) return null;
-        return pos0 + 3;
-    };
-
-    const findElse = function(str, pos) {
-        const pos2 = str.indexOf(':else', pos);
-        if (pos2 == -1) return null;
-        return pos2;
-    };
-
-    const findEndIf = function(str, pos) {
-        const pos3 = str.indexOf(':endif', pos);
-        if (pos3 == -1) return null;
-        return pos3;
-    };
-
-    const extractIfParts = function(str) {
-        const [[_, exp, body, elsebody]] = str
-              .matchAll(/[\t ]+(.+?):do(.+?)(?::else(.+?)|):endif/sg)
-              .toArray()
-        return [[':if' + str, exp, body, elsebody]];
-    };
-
-    const replaceIf = function(str, matches) {
-        const replaces = matches
-              .map( ([_, exp, body, elsebody]) => {
-                  return `
-                  <template if="\$\{${exp}\}">
-                    ${body}
-                  </template>
-                  `+(elsebody ? `
-                  <template if="\$\{!(${exp})\}">
-                    ${elsebody}
-                  </template>
-                   `:'')
-              });
-
-        return matches
-            .reduce((acc, [str, _a, _b, _c], i) => acc.replace(str, replaces[i]), str);
-    };
-
-    let curpos = 0, pos0, max_depth = 5;
-
-    while (pos0 = findIf(str, curpos)) {
-        if (max_depth-- == 0) {
-            console.error(`If max depth reached or bad open/close syntax`);
-            return false;
-        }
-        let if_pos = findIf(str, pos0);
-        let else_pos = findElse(str, pos0);
-        let end_pos = findEndIf(str, pos0);
-
-        if (end_pos === null) {
-            console.error(`Syntax error if in pos ${pos0} has no :endif`);
-            return false;
-        }
-
-        // there is not nested ifs
-        if (if_pos === null) {
-            const matches = extractIfParts(str.slice(pos0, end_pos + 6));
-            str = replaceIf(str, matches);
-            curpos = 0;
-            continue;
-        }
-
-        // there is nested ifs -> if (if ... end) else ... end
-        if (else_pos !== null && if_pos < else_pos) {
-            const matches = extractIfParts(str.slice(if_pos, end_pos + 6));
-            str = replaceIf(str, matches);
-            curpos = 0;
-            continue;
-        }
-
-        // there is nested ifs -> if ... else (if ... end) end
-        if (else_pos !== null && if_pos > else_pos) {
-            const matches = extractIfParts(str.slice(if_pos, end_pos + 6));
-            str = replaceIf(str, matches);
-            curpos = 0;
-            continue;
-        }
-
-        // there is nested ifs -> if (if ... end)  end
-        if (if_pos < end_pos) {
-            const matches = extractIfParts(str.slice(if_pos, end_pos + 6));
-            str = replaceIf(str, matches);
-            curpos = 0;
-            continue;
-        }
-
-        // there is not nested ifs
-        if (if_pos > end_pos) {
-            const matches = extractIfParts(str.slice(pos0, end_pos + 6));
-            str = replaceIf(str, matches);
-            curpos = 0;
-            continue;
-        }
-    }
-    return str;
-};
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -345,6 +175,7 @@ const CORD = function() {
     };
 
     const find_partial_key = function(obj, key) {
+        if (key[0] == '#' || key.slice(0, 7) == '$global') return key;
         for (let k in obj) {
             if (k == key) {
                 return k;
@@ -470,11 +301,12 @@ const CORD = function() {
                     current_lexema = '';
                 }
 
+                // close a string inside a [...], is a lexema 
             } else if (string_opener == '' && str[i] == ']') {
-                if (current_lexema.length > 0) {
-                    lexemas.push(current_lexema);
-                    current_lexema = '';
-                }
+                // if (current_lexema.length > 0) {
+                //     lexemas.push(current_lexema);
+                //     current_lexema = '';
+                // }
                 
                 // open a string
             } else if (string_opener == '' && ['"', "'"].includes(str[i])) {
@@ -510,7 +342,7 @@ const CORD = function() {
 
         return lexemas;
     };
-    this.x = lexer;
+    
     const get_identifiers = function(str) {
         // console.log(str);
         str = decode_htmlentities(str);
@@ -529,18 +361,39 @@ const CORD = function() {
             .uniq()
     };
 
-    const cord_eval = function(str, context, as_string = true)  {
-        // const replaces = str.matchAll(/#\{(.+?)\}/gs)
-        const replaces = str
-              .matchAll(/\$\{[^\}\#]*#((?:[a-z\_\-0-9]+?):(?:[a-z\_\-0-9\:]+))[^\}]*\}/igs)
-              .toArray()
-              .map(([_, e]) => ['#'+e,  global_to_real_var('#'+e)] )
-              // .map(([t, e, x]) => JSON.stringify( [t, '$[\''+e.replace(/:/g, '\'][\'')+'\']'] ))
-              // .uniq()
-              // .map(a => JSON.parse(a))
+    const cord_eval = function(
+        str,
+        context,
+        {as_string, is_foreach} = {as_string: true, is_foreach: false}
+    )  {
+        const escape_regex = function(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        };
         
-        str = replaces.reduce((s, [m, n]) => s.replace(new RegExp(m, 'g'), n), str);
+        // const replaces = str.matchAll(/#\{(.+?)\}/gs)
+        let replaces = str
+            .matchAll(/\$\{([^\}\#]*)#((?:[a-z\_\-0-9]+?):(?:[a-z\_\-0-9\:]+))([^\}]*)\}/igs)
+            .toArray()
+            .map(([t, l, c, r]) => [t, '${' + l + global_to_real_var('#'+c) + r + '}'] )
+        
+        str = replaces.reduce((s, [m, n]) => s.replace(new RegExp(escape_regex(m), 'g'), n), str);
 
+        if (!is_foreach) {
+            replaces = str
+                .matchAll(/\$\{([^\$\!].+?)\}/g)
+                .toArray()
+                .map( ([t, v]) => {
+                    if (v[0] != '$') {
+                        v = '$self.' + v;
+                    }
+                    return [t, '${'+v+'}'];
+                });
+
+            str = replaces.reduce((s, [m, n]) => {
+                return s.replace(new RegExp(escape_regex(m), 'g'), n);
+            }, str);
+        }
+        
         if (as_string) {
             str = '`'+str+'`';
         }
@@ -562,6 +415,9 @@ const CORD = function() {
 
         return eval('with (sandbox) { '+str+' }');
     };
+
+    // this.x = cord_eval;
+    
     const get_text_nodes = function(elem) {
         const cid = elem.getAttribute('cord-id');
         const children = [];
@@ -632,6 +488,165 @@ const CORD = function() {
                 const re = new RegExp('%'+a+'%', 'sg');
                 return acc.replace(re, b)
             }, html);
+    };
+
+    const foreachsParser = function(str) {
+        const findForeach = function(str, pos) {
+            const pos0 = str.slice(pos).indexOf(':foreach');
+            if (pos0 == -1) return null;
+            return pos + pos0 + 8;
+        };
+
+        const findEndForeach = function(str, pos) {
+            const pos2 = str.slice(pos).indexOf(':endforeach');
+            if (pos2 == -1) return null;
+            return pos + pos2;
+        };
+
+        const extractForEachParts = function(str) {
+            const [[_, item, rows, apply, body]] =
+                  str
+                  .matchAll(/[\t ]+(.+?)[\t ]+in[\t ]+(.+?)[\t ]+(?:apply:(.+?)[\t ]|):do(.+?)$/sg)
+                  .toArray()
+            return [[':foreach' + str + ':endforeach', item, rows, apply, body]];
+        };
+
+        const replaceForeach = function(str, matches) {
+            const replaces = matches
+                  .map( ([_, r_var, rows_var, apply, body]) => {
+                      return `
+                  <template foreach="${rows_var}" item="${r_var}" ${apply?'apply="'+apply+'"':''}>
+                    ${body}
+                  </template>
+                  `
+                  });
+            return matches
+                .reduce((acc, [str, _a, _b, _c], i) => acc.replace(str, replaces[i]), str);
+        };
+
+        let curpos = 0, pos0, max_depth = 5;
+
+        while (pos0 = findForeach(str, curpos)) {
+            if (max_depth-- == 0) {
+                console.error(`Foreach max depth reached or bad open/close syntax`);
+                return false;
+            }
+            let pos1 = findForeach(str, pos0);
+            let pos2 = findEndForeach(str, pos0);
+
+            if (pos2 === null) {
+                console.error(`Syntax error foreach in pos ${pos0} has no :endforeach`);
+                return false;
+            }
+            // there is nested foreachs
+            if (pos1 !== null && pos1 < pos2) {
+                curpos = pos1 - 8;
+                continue;
+            }
+            // there is not nested foreachs
+            if (pos1 === null || pos2 < pos1) {
+                const matches = extractForEachParts(str.slice(pos0, pos2));
+                str = replaceForeach(str, matches);
+                curpos = 0;
+                continue;
+            }
+        }
+        return str;
+    };
+
+    const ifsParser = function(str) {
+        const findIf = function(str, pos) {
+            const pos0 = str.indexOf(':if', pos);
+            if (pos0 == -1) return null;
+            return pos0 + 3;
+        };
+
+        const findElse = function(str, pos) {
+            const pos2 = str.indexOf(':else', pos);
+            if (pos2 == -1) return null;
+            return pos2;
+        };
+
+        const findEndIf = function(str, pos) {
+            const pos3 = str.indexOf(':endif', pos);
+            if (pos3 == -1) return null;
+            return pos3;
+        };
+
+        const extractIfParts = function(str) {
+            const [[_, exp, body, elsebody]] = str
+                  .matchAll(/[\t ]+(.+?):do(.+?)(?::else(.+?)|):endif/sg)
+                  .toArray()
+            return [[':if' + str, exp, body, elsebody]];
+        };
+
+        const replaceIf = function(str, matches) {
+            const replaces = matches
+                  .map( ([_, exp, body, elsebody]) => {
+                      return `
+                  <template if="\$\{${exp}\}">
+                    ${body}
+                  </template>
+                  `+(elsebody ? `
+                  <template if="\$\{!(${exp})\}">
+                    ${elsebody}
+                  </template>
+                   `:'')
+                  });
+
+            return matches
+                .reduce((acc, [str, _a, _b, _c], i) => acc.replace(str, replaces[i]), str);
+        };
+
+        let curpos = 0, pos0, max_depth = 5;
+
+        while (pos0 = findIf(str, curpos)) {
+            if (max_depth-- == 0) {
+                console.error(`If max depth reached or bad open/close syntax`);
+                return false;
+            }
+            let if_pos = findIf(str, pos0);
+            let else_pos = findElse(str, pos0);
+            let end_pos = findEndIf(str, pos0);
+
+            if (end_pos === null) {
+                console.error(`Syntax error if in pos ${pos0} has no :endif`);
+                return false;
+            }
+
+            // there is not nested ifs
+            if (if_pos === null || if_pos > end_pos) {
+                const matches = extractIfParts(str.slice(pos0, end_pos + 6));
+                str = replaceIf(str, matches);
+                curpos = 0;
+                continue;
+            }
+
+            // there is nested ifs -> if (if ... end) else ... end
+            if (else_pos !== null && if_pos < else_pos) {
+                const matches = extractIfParts(str.slice(if_pos, end_pos + 6));
+                str = replaceIf(str, matches);
+                curpos = 0;
+                continue;
+            }
+
+            // there is nested ifs -> if ... else (if ... end) end
+            if (else_pos !== null && if_pos > else_pos) {
+                const matches = extractIfParts(str.slice(if_pos, end_pos + 6));
+                str = replaceIf(str, matches);
+                curpos = 0;
+                continue;
+            }
+
+            // there is nested ifs -> if (if ... end)  end
+            if (if_pos < end_pos) {
+                const matches = extractIfParts(str.slice(if_pos, end_pos + 6));
+                str = replaceIf(str, matches);
+                curpos = 0;
+                continue;
+            }
+        }
+        return str;
     };
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -770,9 +785,17 @@ const CORD = function() {
             elem.querySelectorAll('template[foreach]').forEach( tpl => {
                 tpl.cordContainer = cord_id;
                 const field = tpl.getAttribute('foreach');
-                const base_field = get_main_object(field);
-                if (!elem.cordForeach[base_field]) elem.cordForeach[base_field] = [];
-                elem.cordForeach[base_field].push(tpl);
+                // if field is a global field
+                if (field.slice(0, 7) == '$global' || field[0] == '#') {
+                    console.error(
+                        `Foreach object/list MUST BE a local var (trying to use ${field})`);
+                    return;
+                // if field is a local field
+                } else {
+                    const base_field = get_main_object(field);
+                    if (!elem.cordForeach[base_field]) elem.cordForeach[base_field] = [];
+                    elem.cordForeach[base_field].push(tpl);
+                }
                 get_identifiers(tpl.innerHTML, cord_id).forEach(f => {
                     // if f is a global field
                     if (f[0] == '#') {
@@ -921,7 +944,7 @@ const CORD = function() {
                     if (target.hasOwnProperty(prop)) {
                         return target[prop];
                     } else {
-                        return cord_eval(prop, target, false);
+                        return cord_eval(prop, target, {as_string: false, is_foreach: true});
                     }
                 }
             });
@@ -955,7 +978,7 @@ const CORD = function() {
                     ...DATAS[cord_id],
                     ...row
                 };
-                const html = cloned_tpl.innerHTML; // cord_eval(cloned_tpl.innerHTML, env);
+                const html = cloned_tpl.innerHTML; 
                 const tmp = document.createElement('template');
                 tmp.innerHTML = html;
                 [...tmp.content.children].forEach( e => {
@@ -971,7 +994,7 @@ const CORD = function() {
                         }
                     });
                     render_attributes(sub_attrs, env);
-                    e.innerHTML = cord_eval(e.innerHTML, env);
+                    e.innerHTML = cord_eval(e.innerHTML, env, {as_string: true, is_foreach: true});
                     parent.appendChild(e);
                 });
             });
@@ -1015,7 +1038,6 @@ const CORD = function() {
             const cloned_tpl = tpl.cloneNode(true);
             cloned_tpl.content.querySelectorAll('template').forEach( n => n.remove() );
 
-            // const html = cord_eval(cloned_tpl.innerHTML, env);
             const html = cloned_tpl.innerHTML;
             const tmp = document.createElement('template');
             tmp.innerHTML = `<span>${html}</span>`;
@@ -1098,8 +1120,12 @@ const CORD = function() {
             }
         });
         //// Second, update content of every node
-        nodes.forEach(node => {
-            node.textContent = cord_eval(node.cordContent, env);
+        nodes.forEach(node => {            
+            const lenv =  {
+                ...DATAS[node.cordContainer],
+                ...{$self: DATAS[node.cordContainer], $: DATAS, $global: DATAS}
+            };
+            node.textContent = cord_eval(node.cordContent, lenv);
         })
 
         const tpls = new Set();
@@ -1108,7 +1134,11 @@ const CORD = function() {
         fields.forEach( field => {
             let foreach_key;
              // elem.cordForeach[field]) {
-            if (elem.cordForeach && (foreach_key = find_partial_key(elem.cordForeach, field))) {
+            if (
+                elem.cordForeach &&
+                (foreach_key = find_partial_key(elem.cordForeach, field)) &&
+                elem.cordForeach[foreach_key]
+            ) {
                 elem.cordForeach[foreach_key].forEach( tpl => tpls.add(tpl) );
             }
             if (window.cordGlobalForeachs[cord_id] && window.cordGlobalForeachs[cord_id][field]) {

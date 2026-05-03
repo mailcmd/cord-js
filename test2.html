@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tree Menu Demo</title>
+
+  <link rel="stylesheet" type="text/css" href=""/>
+  <style>
+    button::after {
+      content: attr(a);
+      margin-left: 10px;
+    }  
+  </style>    
+</head>
+
+<body>
+  <cord-container cord-id="main">
+  </cord-container>
+  <cord-container cord-id="test">
+    <span>
+      <button on:click="$self.$counter++" a="${counter}">
+        Local: ${counter}
+      </button>
+      <button on:click="$global.main.$counter++" a="${#main:counter}">
+        Global: ${$global.main.counter}
+      </button>
+    </span>
+
+    :if counter % 2 == 0 :do
+    <div>Local counter es par</div>
+    :else
+    <div>Local counter es impar</div>
+    :endif
+
+    :if $global.main.counter % 2 == 0 :do
+    <div>Global counter es par</div>
+    :else
+    <div>Global counter es impar</div>
+    :endif
+
+     <pre>
+     Locals:
+
+     counter -> ${counter}                     
+     counter -> ${$self.counter}               
+     
+     Globals:
+
+     #main:counter-> ${#main:counter}                   
+     #main:counter-> ${$.main.counter}                  
+     #main:counter-> ${$global.main.counter}     
+    </pre>
+
+    :foreach it in $global.main.list :do
+    <div>${it.a}</div>
+    :endforeach
+
+
+    :foreach it in list :do
+    <div>${it.a}</div>
+    :endforeach
+
+
+  </cord-container>
+  
+  <script>
+    const config = {
+        createGlobals: false,
+        strict: true,
+        containers: {
+          test: {
+            counter: 0,
+            list: [{a: 1}, {a: 2}, {a: 3}],
+          },
+          main: {
+            counter: 0,
+            list: [{a: 10}, {a: 20}, {a: 30}],
+          }
+        }
+    };
+
+    window.addEventListener('cordready', async function(e) {
+        $CORD.init(config);
+    });
+  </script>
+  <script src="cord.js"></script>
+</body>
+</html>
+
