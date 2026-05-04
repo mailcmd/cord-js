@@ -870,9 +870,7 @@ const CORD = function() {
                 }
             });
 
-            if (!obj[foreach_field]) {
-                obj = DATAS[cord_id];                
-            } 
+            if (!obj[foreach_field]) obj = DATAS[cord_id];                
 
             let arr = !obj[foreach_field]['forEach']
                   ? Object.values(obj[foreach_field])
