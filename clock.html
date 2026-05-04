@@ -29,32 +29,35 @@
 
     #hour, #minute, #second {
       position: absolute;
-      top: 50%;
       left: 50%;
-      height: 10px;
-      width: 40%;
-      background-color: black;
       rotate: 0deg;
       transform-origin: left;
-      transform: translateY(50%);
+      opacity: 0.6;
+    }
+
+    #hour {
+      top: calc(50% - 6px);
+      height: 12px;
+      width: 40%;
+      background-color: black;
       border-top-right-radius: 6px;
       border-bottom-right-radius: 6px;
     }
 
     #minute {
+      top: calc(50% - 3px);
       height: 6px;
       width: 45%;
       background-color: red;      
-      transform: translateY(2px);
       border-top-right-radius: 3px;
       border-bottom-right-radius: 3px;
     }
     
     #second {
+      top: calc(50% - 1px);
       height: 2px;
       width: 48%;
       background-color: blue;
-      transform: translateY(1px);
     }
 
     #dig {
@@ -77,26 +80,41 @@
         background-color: black;
         border-radius: 50%;
       }
+
+      .mark {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          translate: -50% -50%;
+      }
+      
   </style>    
 </head>
 
 <body>
   <cord-container cord-id="main">
     <div id="clock">
+      :foreach h in [1,2,3,4,5,6,7,8,9,10,11,12] :do
+      <div class="mark"
+           style="
+                  top: calc(50% + ${140 * Math.sin(h * Math.PI/6 - Math.PI/2)}px);
+                  left: calc(50% + ${140 * Math.cos(h * Math.PI/6 - Math.PI/2)}px);
+                  ">${h}</div>
+      :endforeach
+      <div id="dig">${hour}:${minute}:${second}</div>
       <div id="hour" style="rotate: ${hdeg}deg;"></div>
       <div id="minute" style="rotate: ${mdeg}deg;"></div>
       <div id="second" style="rotate: ${sdeg}deg;"></div>
-      <div id="dig">${hour}:${minute}:${second}</div>
       <div id="center"></div>
     </div>
   </cord-container>
   <script>
     function get_time() {
       const time = (new Date());
-      const h = time.getHours() % 12;
+      const h = time.getHours();
       const m = time.getMinutes();
       const s = time.getSeconds();
-      const hdeg = (30 * h + m * 30 / 60) - 90;
+      const hdeg = (30 * (h % 12) + m * 30 / 60) - 90;
       const mdeg = (6 * m) - 90;
       const sdeg = (6 * s) - 90;
       return {
@@ -113,7 +131,10 @@
         createGlobals: false,
         strict: true,
         containers: {
-          main: get_time()
+            main: {
+                ...get_time(),
+                arr: [1,2,3,4,5,6,7,8,9,10,11,12]
+            }
         }
     };
 

@@ -175,7 +175,7 @@ const CORD = function() {
     };
 
     const find_partial_key = function(obj, key) {
-        if (key[0] == '#' || key.slice(0, 7) == '$global') return key;
+        if (key.slice(0, 7) == '$global') return key;
         for (let k in obj) {
             if (k == key) {
                 return k;
@@ -191,7 +191,17 @@ const CORD = function() {
     };
 
     const global_to_real_var = function(str) {
-        return str.slice(1).split(':').reduce( (a,f) => a+"['"+f+"']", '$');
+        if (str[0] == '#') {
+            return str.slice(1).split(':').reduce( (a,f) => {
+                if (isNaN(parseInt(f))) {
+                    return a+"."+f;                    
+                } else {
+                    return a+'['+f+']';
+                }                
+            }, '$global');
+        } else {
+            return str;
+        }
     };
 
     const blur_page = function() {
@@ -220,50 +230,6 @@ const CORD = function() {
         });
     };
 
-   /*
-     Container example:
-     main: {
-       counter: 0,
-       list: [
-         {a: 1, b: 2},
-         {a: 10, b: 20},
-         {a: 100, b: 200},
-         {a: 1000, b: 2000}
-       ],
-       grid: {
-         row1: {col1: 1, col2: 2, col3: 3},
-         row2: {col1: 10, col2: 20, col3: 30},
-         'row-3': {col1: 10, col2: 20, col3: 30},
-       }
-     }
-
-     Locals:
-
-     - counter                          -> counter
-       $self.counter                    -> counter
-     - list[0].a                        -> list
-       $self.list[0].a                  -> list
-     - grid.row2.col3                   -> grid
-       $self.grid.row2.col3             -> grid
-     - grid['row-3'].col2               -> grid
-       $self.grid['row-3'].col2         -> grid
-
-     Globals:
-
-     - #main:counter                    -> #main:counter
-       $.main.counter                   -> #main:counter
-       $global.main.counter             -> #main:counter
-     - #main:list:0:a                   -> #main:list
-       $.main.list[0].a                 -> #main:list
-       $global.main.list[0].a           -> #main:list
-     - #main:grid:row2:col3             -> #main:grid
-       $.main.grid.row2.col3            -> #main:grid
-       $global.main.grid.row2.col3      -> #main:grid
-     - #main:grid:row-3:col2            -> #main:grid
-       $.main.grid['row-3'].col2        -> #main:grid
-       $global.main.grid['row-3'].col2  -> #main:grid
-
-    */
     const lexer = function(str) {
         const separators = [';', ',', '+', '-', '*', '/', '%', ')', '|', '&', '%'];
         let i = 0, current_lexema = '', string_opener = '';
@@ -288,9 +254,10 @@ const CORD = function() {
                 // open a string inside a [...], is a lexema 
             } else if (string_opener == '' && str[i] == '[') {
                 if (['"', "'"].includes(str[i+1])) {
+                    current_lexema += '.';
                     let j = 2;
-                    while (!['"', "'"].includes(str[j]) && str[j]) {
-                        current_lexema += str[j];
+                    while (!['"', "'"].includes(str[i+j]) && str[i+j]) {
+                        current_lexema += str[i+j];
                         j++;
                     }
                     lexemas.push(current_lexema);
@@ -301,13 +268,6 @@ const CORD = function() {
                     current_lexema = '';
                 }
 
-                // close a string inside a [...], is a lexema 
-            } else if (string_opener == '' && str[i] == ']') {
-                // if (current_lexema.length > 0) {
-                //     lexemas.push(current_lexema);
-                //     current_lexema = '';
-                // }
-                
                 // open a string
             } else if (string_opener == '' && ['"', "'"].includes(str[i])) {
                 if (current_lexema.length > 0) {
@@ -349,18 +309,17 @@ const CORD = function() {
         const strs = str
               .matchAll(/\$\{(.+?)\}/gs)
               .toArray()
-              .map(([_, e]) => e)
-              .concat(str
-                      .matchAll(/#\{(.+?)\}/gs)
-                      .toArray()
-                      .map(([_, e]) => '#'+e)
-              );
+              .map(([_, e]) => e);
+        
         return strs
             .map(str => get_curated_identifiers(lexer(str)))
             .flat()
             .uniq()
+            .map(global_to_real_var)
     };
 
+    this.x = get_identifiers;
+    
     const cord_eval = function(
         str,
         context,
@@ -370,34 +329,10 @@ const CORD = function() {
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         };
         
-        // const replaces = str.matchAll(/#\{(.+?)\}/gs)
-        let replaces = str
-            .matchAll(/\$\{([^\}\#]*)#((?:[a-z\_\-0-9]+?):(?:[a-z\_\-0-9\:]+))([^\}]*)\}/igs)
-            .toArray()
-            .map(([t, l, c, r]) => [t, '${' + l + global_to_real_var('#'+c) + r + '}'] )
-        
-        str = replaces.reduce((s, [m, n]) => s.replace(new RegExp(escape_regex(m), 'g'), n), str);
-
-        if (!is_foreach) {
-            replaces = str
-                .matchAll(/\$\{([^\$\!].+?)\}/g)
-                .toArray()
-                .map( ([t, v]) => {
-                    if (v[0] != '$') {
-                        v = '$self.' + v;
-                    }
-                    return [t, '${'+v+'}'];
-                });
-
-            str = replaces.reduce((s, [m, n]) => {
-                return s.replace(new RegExp(escape_regex(m), 'g'), n);
-            }, str);
-        }
-        
         if (as_string) {
             str = '`'+str+'`';
         }
-
+        
         const sandbox = new Proxy(context, {
             get(target, prop) {
                 if (prop in target) {
@@ -405,7 +340,7 @@ const CORD = function() {
                 } else if (prop in window) {
                     return window[prop];
                 } else {
-                    return $this.config.strict ? undefined : "";
+                    return $this.config.strict ? undefined : '';
                 }
             },
             has(target, prop) {
@@ -515,9 +450,11 @@ const CORD = function() {
             const replaces = matches
                   .map( ([_, r_var, rows_var, apply, body]) => {
                       return `
+                  <cord-foreach>
                   <template foreach="${rows_var}" item="${r_var}" ${apply?'apply="'+apply+'"':''}>
                     ${body}
                   </template>
+                  </cord-foreach>
                   `
                   });
             return matches
@@ -717,7 +654,7 @@ const CORD = function() {
     };
 
     const process_containers = function() {
-        // Get every elem with cord-id attr.
+        // Get every elem with cord-id attr and not processed yet.
         const container_elems = [...document.querySelectorAll('*[cord-id]:not([processed])')];
         for (const elem of container_elems) {
             const cord_id = elem.getAttribute('cord-id');
@@ -757,18 +694,14 @@ const CORD = function() {
                 node.cordContainer = cord_id;
                 get_identifiers(node.cordContent, cord_id).forEach(f => {
                     // if f is a global field
-                    if (f[0] == '#') {
-                        const [_cord_id, _field] = f.slice(1).split(':');
+                    if (f.slice(0, 7) == '$global') {
+                        const [_, _cord_id, _field] = f.slice(1).split(/[\.\[]/);
                         if (!window.cordGlobalNodes[_cord_id])
                             window.cordGlobalNodes[_cord_id] = {};
                         if (!window.cordGlobalNodes[_cord_id][_field])
                             window.cordGlobalNodes[_cord_id][_field] = new Set();
                         window.cordGlobalNodes[_cord_id][_field].add(node);
 
-                        const re = new RegExp('#\{'+f.slice(1)+'\}', 'gs');
-                        const real_var = global_to_real_var(f);
-                        node.cordContent = node.cordContent
-                            .replace(re, '${'+real_var+'}');
                         if (!elem.cordNodes[f]) elem.cordNodes[f] = [];
                         elem.cordNodes[f].push(node);
                         elem.cordGlobalFields.add(f);
@@ -785,32 +718,30 @@ const CORD = function() {
             elem.querySelectorAll('template[foreach]').forEach( tpl => {
                 tpl.cordContainer = cord_id;
                 const field = tpl.getAttribute('foreach');
-                // if field is a global field
+                // if field is a global field 
                 if (field.slice(0, 7) == '$global' || field[0] == '#') {
-                    console.error(
-                        `Foreach object/list MUST BE a local var (trying to use ${field})`);
-                    return;
+                    const [_, _cord_id, _field] = field.slice(1).split(/[\.\[]/);
+                    if (!window.cordGlobalForeachs[_cord_id])
+                        window.cordGlobalForeachs[_cord_id] = {};
+                    if (!window.cordGlobalForeachs[_cord_id][_field])
+                        window.cordGlobalForeachs[_cord_id][_field] = new Set();
+                    window.cordGlobalForeachs[_cord_id][_field].add(tpl);
                 // if field is a local field
                 } else {
-                    const base_field = get_main_object(field);
+                    const base_field = get_main_object(field) || '__literal__';
                     if (!elem.cordForeach[base_field]) elem.cordForeach[base_field] = [];
                     elem.cordForeach[base_field].push(tpl);
                 }
                 get_identifiers(tpl.innerHTML, cord_id).forEach(f => {
                     // if f is a global field
-                    if (f[0] == '#') {
-                        const [_cord_id, _field] = f.slice(1).split(':');
+                    if (f.slice(0, 7) == '$global') {
+                        const [_, _cord_id, _field] = f.slice(1).split(/[\.\[]/);
                         if (!window.cordGlobalForeachs[_cord_id])
                             window.cordGlobalForeachs[_cord_id] = {};
                         if (!window.cordGlobalForeachs[_cord_id][_field])
                             window.cordGlobalForeachs[_cord_id][_field] = new Set();
                         window.cordGlobalForeachs[_cord_id][_field].add(tpl);
-                        console.log('#\{'+f.slice(1)+'\}')
-                        const re = new RegExp('#\{'+f.slice(1)+'\}', 'gs');
-                        const real_var = global_to_real_var(f);
-                        tpl.innerHTML = tpl.innerHTML
-                            .replace(re, '${'+real_var+'}');
-                        tpl.setAttribute('foreach', field.replace(re, real_var));
+
                         if (!elem.cordForeach[f]) elem.cordForeach[f] = [];
                         elem.cordForeach[f].push(tpl);
                         elem.cordGlobalFields.add(f);
@@ -830,19 +761,14 @@ const CORD = function() {
                 get_identifiers(tpl.getAttribute('if')+','+tpl.innerHTML, cord_id).forEach(f => {
                     const exp = tpl.getAttribute('if');
                     // if f is a global field
-                    if (f[0] == '#') {
-                        const [_cord_id, _field] = f.slice(1).split(':');
+                    if (f.slice(0, 7) == '$global') {
+                        const [_, _cord_id, _field] = f.slice(1).split(/[\.\[]/);
                         if (!window.cordGlobalIfs[_cord_id])
                             window.cordGlobalIfs[_cord_id] = {};
                         if (!window.cordGlobalIfs[_cord_id][_field])
                             window.cordGlobalIfs[_cord_id][_field] = new Set();
                         window.cordGlobalIfs[_cord_id][_field].add(tpl);
 
-                        const re = new RegExp('#\{'+f.slice(1)+'\}', 'gs');
-                        const real_var = global_to_real_var(f);
-                        tpl.innerHTML = tpl.innerHTML
-                            .replace(re, '${'+real_var+'}');
-                        tpl.setAttribute('if', exp.replace(re, real_var));
                         if (!elem.cordIfs[f]) elem.cordIfs[f] = [];
                         elem.cordIfs[f].push(tpl);
                         elem.cordGlobalFields.add(f);
@@ -860,26 +786,21 @@ const CORD = function() {
             elem.querySelectorAll('*:not(template)').forEach( el => {
                 const attrs = el.attributes;
                 for (let i = 0; i < attrs.length; i++) {
-                    if (! /[#\$]\{.+?\}/.test(attrs[i].nodeValue)) continue;
+                    if (! /\$\{.+?\}/.test(attrs[i].nodeValue)) continue;
                     get_identifiers(attrs[i].nodeValue, cord_id).forEach(f => {
-                        if (f[0] == '#') {
-                            const [_cord_id, _field] = f.slice(1).split(':');
+                        // if f is a global field
+                        if (f.slice(0, 7) == '$global') {
+                            const [_, _cord_id, _field] = f.slice(1).split(/[\.\[]/);
                             if (!window.cordGlobalAttrs[_cord_id])
                                 window.cordGlobalAttrs[_cord_id] = {};
                             if (!window.cordGlobalAttrs[_cord_id][_field])
                                 window.cordGlobalAttrs[_cord_id][_field] = new Set();
 
-                            const re = new RegExp('#\{'+f.slice(1)+'\}', 'gs');
-                            const real_var = global_to_real_var(f);
-                            const nodeValue = attrs[i].nodeValue
-                                .replace(re, ''+real_var+'');
-                                // .replace(re, '${'+real_var+'}');
-
                             window.cordGlobalAttrs[_cord_id][_field].add(
-                                {node: el, name: attrs[i].nodeName, eval: nodeValue}
+                                {node: el, name: attrs[i].nodeName, eval: attrs[i].nodeValue}
                             );
 
-                            // if f is a local field
+                        // if f is a local field
                         } else {
                             elem.cordAttrs.push(
                                 {node: el, name: attrs[i].nodeName, eval: attrs[i].nodeValue}
@@ -949,7 +870,9 @@ const CORD = function() {
                 }
             });
 
-            obj = !obj[foreach_field] ? DATAS[cord_id] : obj;
+            if (!obj[foreach_field]) {
+                obj = DATAS[cord_id];                
+            } 
 
             let arr = !obj[foreach_field]['forEach']
                   ? Object.values(obj[foreach_field])
@@ -987,7 +910,7 @@ const CORD = function() {
                     [e, ...e.querySelectorAll('*:not(template)')].forEach( el => {
                         const attrs = el.attributes;
                         for (let i = 0; i < attrs.length; i++) {
-                            if (! /[#\$]\{.+?\}/.test(attrs[i].nodeValue)) continue;
+                            if (! /\$\{.+?\}/.test(attrs[i].nodeValue)) continue;
                             sub_attrs.push(
                                 {node: el, name: attrs[i].nodeName, eval: attrs[i].nodeValue}
                             );
@@ -1046,7 +969,7 @@ const CORD = function() {
                 e.querySelectorAll('*:not(template)').forEach( el => {
                     const attrs = el.attributes;
                     for (let i = 0; i < attrs.length; i++) {
-                        if (! /[#\$]\{.+?\}/.test(attrs[i].nodeValue)) continue;
+                        if (! /\$\{.+?\}/.test(attrs[i].nodeValue)) continue;
                         sub_attrs.push(
                             {node: el, name: attrs[i].nodeName, eval: attrs[i].nodeValue}
                         );
@@ -1088,7 +1011,7 @@ const CORD = function() {
     const render_container = function(cord_id, field) {
         const elem = document.querySelector(`*[cord-id="${cord_id}"]`);
 
-        const is_global_field = (field && field[0] == '#');
+        const is_global_field = (field && field.slice(0,7) == '$global');
         const real_field = is_global_field ? global_to_real_var(field) : field;
 
         const fields = field
@@ -1096,7 +1019,7 @@ const CORD = function() {
               : [...Object.keys(DATAS[cord_id]), ...elem.cordGlobalFields] ;
 
         // env has {$: DATAS} to eval global fields
-        const env = {...DATAS[cord_id], ...{$self: DATAS[cord_id], $: DATAS, $global: DATAS}}
+        const env = {...DATAS[cord_id], ...{$self: DATAS[cord_id], $global: DATAS}}
 
         const cord_containers_affected = new Set();
 
@@ -1123,7 +1046,7 @@ const CORD = function() {
         nodes.forEach(node => {            
             const lenv =  {
                 ...DATAS[node.cordContainer],
-                ...{$self: DATAS[node.cordContainer], $: DATAS, $global: DATAS}
+                ...{$self: DATAS[node.cordContainer], $global: DATAS}
             };
             node.textContent = cord_eval(node.cordContent, lenv);
         })
@@ -1133,13 +1056,18 @@ const CORD = function() {
         // Render foreachs
         fields.forEach( field => {
             let foreach_key;
-             // elem.cordForeach[field]) {
             if (
                 elem.cordForeach &&
                 (foreach_key = find_partial_key(elem.cordForeach, field)) &&
                 elem.cordForeach[foreach_key]
             ) {
-                elem.cordForeach[foreach_key].forEach( tpl => tpls.add(tpl) );
+                elem.cordForeach[foreach_key].forEach( tpl => {
+                    if (tpl.cordContainer == cord_id) tpls.add(tpl)
+                });
+            } else if (elem.cordForeach['__literal__']) {
+                elem.cordForeach['__literal__'].forEach( tpl => {
+                    if (tpl.cordContainer == cord_id) tpls.add(tpl)
+                });
             }
             if (window.cordGlobalForeachs[cord_id] && window.cordGlobalForeachs[cord_id][field]) {
                 window.cordGlobalForeachs[cord_id][field].forEach( tpl => {
@@ -1148,7 +1076,7 @@ const CORD = function() {
                 });
             }
         });
-        render_foreachs(cord_id, [...tpls], DATAS[cord_id]);
+        render_foreachs(cord_id, [...tpls], env);
 
         tpls.clear();
 

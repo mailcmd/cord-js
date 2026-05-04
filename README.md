@@ -16,16 +16,16 @@
    - [x] Improve if/else parser to allow nested statements
    - [x] Create a custom element cord-template to create noscript templates
    - [x] Create a custom element cord-container to invoke a cord-template 
-   - [ ] cord-style tag to load css and create superclasses.
    - [x] foreach and if parser while loop make security exit (max nested depth)
    - [x] If inside foreach 
    - [x] Attributes type 'disabled' or 'checked'
+   - [x] <cord-script> tag, work on local functions and vars. Also try containers vars as local var.
+   - [x] Inside a container, not needed to use $CORD.$.<cont_id>.<prop> to modify, just <prop>.
+   - [-] 'get_indentifier' function is a piece of SHIT, you need to remake this function from zero.
    - [ ] Special attribute 'render-onchange' to force render on field change 
    - [ ] new CORD(...) -> Pass a list of templates to load previous to bootstram
-   - [ ] <cord-script> tag, work on local functions and vars. Also try containers vars as local var.
-   - [ ] 'get_indentifier' function is a piece of SHIT, you need to remake this function from zero.
-   - [ ] Inside a container, not needed to use $CORD.$.<cont_id>.<prop> to modify, just <prop>.
    - [ ] :bind special attr. Usable to join tag property with a local var. See svelte 'bind'.
+   - [ ] cord-style tag to load css and create superclasses.
          
 
 ## WEBSOCKET and EVENTSOURCE

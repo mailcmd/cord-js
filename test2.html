@@ -21,22 +21,10 @@
       <button on:click="$self.$counter++" a="${counter}">
         Local: ${counter}
       </button>
-      <button on:click="$global.main.$counter++" a="${#main:counter}">
+      <button on:click="$global.main.$counter++" a="${$global.main.counter}">
         Global: ${$global.main.counter}
       </button>
     </span>
-
-    :if counter % 2 == 0 :do
-    <div>Local counter es par</div>
-    :else
-    <div>Local counter es impar</div>
-    :endif
-
-    :if $global.main.counter % 2 == 0 :do
-    <div>Global counter es par</div>
-    :else
-    <div>Global counter es impar</div>
-    :endif
 
      <pre>
      Locals:
@@ -46,9 +34,21 @@
      
      Globals:
 
-     #main:counter-> ${#main:counter}                   
-     #main:counter-> ${$.main.counter}                  
-     #main:counter-> ${$global.main.counter}     
+     #main:counter-> ${$global.main.counter}
+
+     :if counter % 2 == 0 :do
+     Local counter es par
+     :else
+     Local counter es impar
+     :endif
+
+     :if $global.main.counter % 2 == 0 :do
+     Global counter es par
+     :else
+     Global counter es impar
+     :endif
+
+
     </pre>
 
     :foreach it in $global.main.list :do

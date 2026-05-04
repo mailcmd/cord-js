@@ -11,11 +11,11 @@
   <cord-container cord-id="main"></cord-container>
   <cord-container cord-id="test">
     <span>
-      <button on:click="$global.main.$counter++" a="${#main:value}">
+      <button on:click="$global.main.$counter++" a="${$global.main.value}">
         Clicked: ${counter}
       </button>
       <button on:click="$self.add()"  a="${$global.main.value}">
-        Clicked: ${#main:value} ${$global.main.value}
+        Clicked: ${$global.main.value}
       </button>
     </span>
     <cord-script>
@@ -34,23 +34,15 @@
         ${$self.list[0].a}                  -> list
       - ${grid.row2.col3}                   -> grid
         ${$self.grid.row2.col3}             -> grid
-      - ${grid['row-3'].col2}               -> grid
-        ${$self.grid['row-3'].col2}         -> grid
+      - ${grid['row3'].col2}               -> grid
+        ${$self.grid['row3'].col2}         -> grid
 
      Globals:
 
-     - ${#main:counter}                    -> #main:counter
-       ${$.main.counter}                   -> #main:counter
-       ${$global.main.counter}             -> #main:counter
-     - ${#main:list:0:a}                   -> #main:list
-       ${$.main.list[0].a}                 -> #main:list
-       ${$global.main.list[0].a}           -> #main:list
-     - ${#main:grid:row2:col3}             -> #main:grid
-       ${$.main.grid.row2.col3}            -> #main:grid
-       ${$global.main.grid.row2.col3}      -> #main:grid
-     - ${#main:grid:row-3:col2}            -> #main:grid
-       ${$.main.grid['row-3'].col2}        -> #main:grid
-       ${$global.main.grid['row-3'].col2}  -> #main:grid
+     - ${$global.main.counter}                   -> #main:counter
+     - ${$global.main.list[0].a}                 -> #main:list
+     - ${$global.main.grid.row2.col3}            -> #main:grid
+     - ${$global.main.grid['row3'].col2}         -> #main:grid
       
     </pre>
 
@@ -72,7 +64,7 @@
             grid: {
               row1: {col1: 1, col2: 2, col3: 3},
               row2: {col1: 10, col2: 20, col3: 30},
-              'row-3': {col1: 10, col2: 20, col3: 30},
+              row3: {col1: 10, col2: 20, col3: 30},
             }
           },
           main: {
@@ -87,7 +79,7 @@
             grid: {
               row1: {col1: 1, col2: 2, col3: 3},
               row2: {col1: 10, col2: 20, col3: 30},
-              'row-3': {col1: 10, col2: 20, col3: 30},
+              row3: {col1: 10, col2: 20, col3: 30},
             }
           }
         }
