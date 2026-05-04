@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clock</title>
+
+  <link rel="stylesheet" type="text/css" href=""/>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      height: 100vh;
+      padding: 0;
+      margin: 0;
+      align-items: center;
+      font-family: Arial;
+    }
+      
+    #clock {
+      position: relative;
+      width: 300px;
+      aspect-ratio: 1;
+      background-color: whitesmoke;
+      border: 1px dashed black;
+      border-radius: 50%;
+      outline: 1px solid black;
+      outline-offset: 2px;
+    }
+
+    #hour, #minute, #second {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      height: 10px;
+      width: 40%;
+      background-color: black;
+      rotate: 0deg;
+      transform-origin: left;
+      transform: translateY(50%);
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+    }
+
+    #minute {
+      height: 6px;
+      width: 45%;
+      background-color: red;      
+      transform: translateY(2px);
+      border-top-right-radius: 3px;
+      border-bottom-right-radius: 3px;
+    }
+    
+    #second {
+      height: 2px;
+      width: 48%;
+      background-color: blue;
+      transform: translateY(1px);
+    }
+
+    #dig {
+      position: absolute;
+      left: 50%;
+      top: 70%;
+      transform: translatex(-50%);
+      background-color: black;
+      color: white;
+      padding: 3px;      
+      }
+
+      #center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 25px;
+        aspect-ratio: 1;
+        background-color: black;
+        border-radius: 50%;
+      }
+  </style>    
+</head>
+
+<body>
+  <cord-container cord-id="main">
+    <div id="clock">
+      <div id="hour" style="rotate: ${hdeg}deg;"></div>
+      <div id="minute" style="rotate: ${mdeg}deg;"></div>
+      <div id="second" style="rotate: ${sdeg}deg;"></div>
+      <div id="dig">${hour}:${minute}:${second}</div>
+      <div id="center"></div>
+    </div>
+  </cord-container>
+  <script>
+    function get_time() {
+      const time = (new Date());
+      const h = time.getHours() % 12;
+      const m = time.getMinutes();
+      const s = time.getSeconds();
+      const hdeg = (30 * h + m * 30 / 60) - 90;
+      const mdeg = (6 * m) - 90;
+      const sdeg = (6 * s) - 90;
+      return {
+        hdeg: hdeg,
+        mdeg: mdeg,
+        sdeg: sdeg,
+        hour: h.toString().padStart(2, '0'),
+        minute: m.toString().padStart(2, '0'),
+        second: s.toString().padStart(2, '0'),
+      };
+    }
+    
+    const config = {
+        createGlobals: false,
+        strict: true,
+        containers: {
+          main: get_time()
+        }
+    };
+
+    window.addEventListener('cordready', async function(e) {
+      $CORD.init(config);
+      setInterval(()=>{
+        $CORD.update('main', get_time());
+      }, 999);
+    });
+  </script>
+  <script src="cord.js"></script>
+</body>
+</html>
+
