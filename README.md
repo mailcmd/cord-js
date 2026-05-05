@@ -1,4 +1,4 @@
-<h1>WORK IN PROGRESS, NOT USABLE YET!</h1>
+<h1>WORK IN PROGRESS!</h1>
 
 # TODO
 
@@ -21,10 +21,12 @@
    - [x] Attributes type 'disabled' or 'checked'
    - [x] <cord-script> tag, work on local functions and vars. Also try containers vars as local var.
    - [x] Inside a container, not needed to use $CORD.$.<cont_id>.<prop> to modify, just <prop>.
-   - [-] 'get_indentifier' function is a piece of SHIT, you need to remake this function from zero.
-   - [ ] Special attribute 'render-onchange' to force render on field change 
-   - [ ] new CORD(...) -> Pass a list of templates to load previous to bootstram
-   - [ ] :bind special attr. Usable to join tag property with a local var. See svelte 'bind'.
+   - [x] 'get_indentifier' function is a piece of SHIT, I need to remake this function from zero.
+   - [ ] 'get_indentifier' function still is not good enough, it need to be more accurate.
+   - ~~[ ] Special attribute 'render-onchange' to force render on field change~~
+   - [ ] new CORD(...) -> Pass a list of templates to load previous to bootstrap
+   - [ ] $CORD.init(...) -> Pass a list of templates to load previous to bootstrap
+   - [x] bind:... special attr. Usable to join element property with a local var. 
    - [ ] cord-style tag to load css and create superclasses.
          
 
@@ -34,7 +36,7 @@
 
 # CORD
 
-CORD a small reactive javascript library to web development 
+CORD a small reactive javascript library to web development.
 
 ## Concepts
 
@@ -46,11 +48,12 @@ i.e, changing some property of an object, automatically update the page content.
 Ways of use containers field inside a template:
 
 ```
-${<local-field>}                         # render local field of the container
-#{<cord-id>:<field>}                     # way of use foreing field
+<local-field>                         # render local field of the current container
+$self.<local-field>                   # render local field of the current container
+$global.<cord_id>.<local-field>       # render global field of the container <cord_id>
 ```
 
-# Tutorial
+# It is better to learn with a tutorial...
 
 
 ## Example 1
@@ -175,7 +178,11 @@ $CORD.get('example:counters:1:c'); // return: 99
 ```
 
 The `set` function count with a third parameters that allow to instruct CORD to render after set
-the value. By default it is true. 
+the value. By default it is true. If false it is a lazzy update, i.e., you need to call:
+```javascript
+$CORD.refresh('example'); // 'example' is the container id
+```
+to let the changes take effect.
 
 ## Example 3
 Now, what happen if we want to have many counters? Should we repeat the 2 buttons and the counter 
@@ -239,9 +246,13 @@ implement this template will reference itself. In fact you can pass more mapped 
 Then in your template you can use `%title%` and `%var2%` and wait that the render make the 
 sustitution. 
 
-## Example 4
+## Example 4a
 
-Special attributes :<attr> 
+Special attributes `:<attr>`
+
+## Example 4b
+
+Special attributes `on:<event>` and `bind:<value>`
 
 ## Example 5
 
@@ -257,7 +268,7 @@ Accesing other containers fields.
 
 ## Example 8
 
-Accesing fields in the bad a ugly way. 
+Accesing fields in the bad and ugly way. 
 $CORD.$... 
 
 ## Example 9
