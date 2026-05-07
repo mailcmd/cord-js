@@ -22,14 +22,14 @@
    - [x] <cord-script> tag, work on local functions and vars. Also try containers vars as local var.
    - [x] Inside a container, not needed to use $CORD.$.<cont_id>.<prop> to modify, just <prop>.
    - [x] 'get_indentifier' function is a piece of SHIT, I need to remake this function from zero.
-   - [ ] Throw error when cord_id does not match [a-zA-Z0-9\_].
+   - [x] Throw error when cord_id does not match [a-zA-Z0-9\_].
+   - [x] bind:... special attr. Useful to join element property with a local var. 
    - [ ] Hide noscript and if/foreach templates.
-   - [ ] 'get_indentifier' function still is not good enough, it need to be more accurate.
+   - [ ] 'get_indentifier' function lexer still is not good enough, it need to be more accurate.
    - [ ] new CORD(...) -> Pass a list of templates to load previous to bootstrap
    - [ ] $CORD.init(...) -> Pass a list of templates to load previous to bootstrap
-   - [x] bind:... special attr. Usable to join element property with a local var. 
    - [ ] cord-style tag to load css and create superclasses.
-         
+
    
 ## WEBSOCKET and EVENTSOURCE
    - [x] Define format for direct server update of cord_containers
