@@ -24,6 +24,8 @@
       border-radius: 50%;
       outline: 1px solid black;
       outline-offset: 2px;
+      box-shadow: 0 0 10px black;
+      background-image: radial-gradient(#fff 66%, #000 95%);
     }
 
     #hour, #minute, #second {
@@ -96,8 +98,8 @@
       :foreach h in [1,2,3,4,5,6,7,8,9,10,11,12] :do
       <div class="mark"
            style="
-                  top: calc(50% + ${140 * Math.sin(h * Math.PI/6 - Math.PI/2)}px);
-                  left: calc(50% + ${140 * Math.cos(h * Math.PI/6 - Math.PI/2)}px);
+                  top: calc(50% + ${135 * Math.sin(h * Math.PI/6 - Math.PI/2)}px);
+                  left: calc(50% + ${135 * Math.cos(h * Math.PI/6 - Math.PI/2)}px);
                   ">${h}</div>
       :endforeach
       <div id="dig">${hour}:${minute}:${second}</div>
