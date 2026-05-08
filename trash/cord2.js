@@ -664,10 +664,14 @@ const CORD = function() {
 
             // Check if content is inside elem or in a noscript-template, then store content
             const tpl_id = elem.getAttribute('cord-tpl-ref');
-            const template = document.querySelector(`noscript[cord-tpl-id="${tpl_id}"]`);
-            if (tpl_id && !template) {
+            let template;
+            // const template = document.querySelector(`noscript[cord-tpl-id="${tpl_id}"]`);
+            if (tpl_id && !window.cordTemplates[tpl_id]) {
                 console.error(`Container '${cord_id}' template ref '${tpl_id}' does not exist!!`);
-                continue;
+                continue;               
+            } else if(window.cordTemplates[tpl_id]) {
+                template = document.createElement('noscript');
+                template.innerHTML = window.cordTemplates[tpl_id];
             }
             const container = template ? template : elem;
             const map = !template
@@ -860,6 +864,7 @@ const CORD = function() {
             });
             
             elem.setAttribute('processed', 'true');
+            if (template) template.remove();
         }
     };
 
@@ -871,7 +876,7 @@ const CORD = function() {
         process_containers();
 
         // noscripts processed are removed (Should I do this???)
-        document.querySelectorAll('noscript[processed]').forEach( ns => ns.remove() );
+        // document.querySelectorAll('noscript[processed]').forEach( ns => ns.remove() );
     };
 
     const bootstrap = async function() {
@@ -1437,6 +1442,7 @@ const CORD = function() {
     /////////////////////////////////////////////////////////////////////////////////
 
     this.ready = false;
+    if (!window.cordTemplates) window.cordTemplates = {};
     window.cordGlobalNodes = {};
     window.cordGlobalForeachs = {};
     window.cordGlobalIfs = {};
@@ -1603,12 +1609,15 @@ class CordTemplate extends HTMLElement {
     }
 
     connectedCallback() {
-        const noscript = document.createElement('noscript');
+        // const noscript = document.createElement('noscript');
         const html = this.innerHTML.replace('<!--', '').replace('-->', '');
-        noscript.innerHTML = this.innerHTML.replace('<!--', '').replace('-->', '');
+        // noscript.innerHTML = this.innerHTML.replace('<!--', '').replace('-->', '');
+        // noscript.innerHTML = atob(this.getAttribute('cord-content'));
         const tpl_id = this.getAttribute('cord-tpl-id');
-        noscript.setAttribute('cord-tpl-id', tpl_id);
-        this.after(noscript);
+        // noscript.setAttribute('cord-tpl-id', tpl_id);
+        // this.after(noscript);
+        if (!window.cordTemplates) window.cordTemplates = {};
+        window.cordTemplates[tpl_id] = html;
         this.remove();
         console.log(`Added cord-template '${tpl_id}'`);
     }
