@@ -10,11 +10,6 @@ achieve with this? Anything, I am doing it just for fun.
 ### DISCLAMER: 
 **I'm building this library just for fun. I started with a simple idea and gradually made it a bit more complex, so this piece of code is a bit messy and should definitely not be used in a real-world setting.**
     
-## Concepts
-
-CORD is etentially a javascript client library (CORD-js) that allow to build reactive web pages,
-i.e, changing some property of an object, automatically update the page content.
-
 ## How to use?
 
 Ways of use containers field inside a template:
