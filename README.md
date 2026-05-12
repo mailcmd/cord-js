@@ -351,7 +351,7 @@ See this example:
 
 ```
 
-You could do the same setting onclick buttun attribute as
+You could do the same setting onclick button attribute as
 `"$CORD.$.main.$disabled=!$CORD.$.main.disabled"`.
 
 But there is a better way to do it...
@@ -542,8 +542,8 @@ Now we will talk about the `:foreach` statement. See this example:
 ```
 
 Nothing unusual, just a classic foreach. Now take in account some details:
-  1- The item variable (`task` in this case) instance every item of the array.
-  2- For every instance exists a variable named `<item>_i` (`task_i` in this case) that store the
+  1. The item variable (`task` in this case) instance every item of the array.
+  2. For every instance exists a variable named `<item>_i` (`task_i` in this case) that store the
      current index.
 
 Also in this example you can see `$CORD.update_object`; more details later.
