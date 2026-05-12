@@ -24,10 +24,9 @@
    - [x] 'get_indentifier' function is a piece of SHIT, I need to remake this function from zero.
    - [x] Throw error when cord_id does not match [a-zA-Z0-9\_].
    - [x] bind:... special attr. Useful to join element property with a local var.
-   ~~- [ ] Hide noscript and if/foreach templates.~~
+   - [ ] ~~Hide noscript and if/foreach templates.~~
    - [ ] 'get_indentifier' function lexer still is not good enough, it need to be more accurate.
-   - [ ] new CORD(...) -> Pass a list of templates to load previous to bootstrap
-   - [ ] $CORD.init(...) -> Pass a list of templates to load previous to bootstrap
+   - [ ] Think in a way to pass a list of templates to load previous to bootstrap
    - [ ] cord-style tag to load css and create superclasses.
 
 
