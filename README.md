@@ -13,7 +13,7 @@ achieve with this? Anything, I am doing it just for fun.
 # It is better to learn with examples...
 ## Example 1
 
-[See in action...](https://mailcmd.github.io/cord-js/tutorials/1/index.html)
+[See in action](https://mailcmd.github.io/cord-js/tutorials/1/index.html)
 
 Let's start with a simple `index.html`:
 ```html
