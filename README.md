@@ -13,7 +13,7 @@ achieve with this? Anything, I am doing it just for fun.
 # It is better to learn with examples...
 ## Example 1
 
-(See in action...)[https://mailcmd.github.io/cord-js/tutorials/1/index.html]
+[See in action...](https://mailcmd.github.io/cord-js/tutorials/1/index.html)
 
 Let's start with a simple `index.html`:
 ```html
@@ -91,6 +91,9 @@ function (more below).
 Let's make some improvement now...
 
 ## Example 2
+
+[See in action...](https://mailcmd.github.io/cord-js/tutorials/2/index.html)
+
 ```html
 <!DOCTYPE html>
 <html>
@@ -163,6 +166,9 @@ $CORD.refresh('example'); // 'example' is the container id
 to let the changes take effect.
 
 ## Example 3
+
+[See in action...](https://mailcmd.github.io/cord-js/tutorials/3/index.html)
+
 Now, what happen if we want to have many counters? Should we repeat the 2 buttons and the counter
 many times? No, in CORD you can use templates:
 
@@ -236,6 +242,9 @@ Then in your template you can use `%title%` and `%var2%` and wait that the CORD 
 sustitution.
 
 ## Example 4a
+
+[See in action...](https://mailcmd.github.io/cord-js/tutorials/4a/index.html)
+
 Now is time to use template in a more suitable way. Instead of embed the template in the html you
 can create independent files and put inside one or more templates without necesity of use comment
 marks.
@@ -301,6 +310,8 @@ Filename: `index.html`
 
 ## Example 4b
 
+[See in action...](https://mailcmd.github.io/cord-js/tutorials/4b/index.html)
+
 Special attributes of kind `:<attr>` are useful for boolean type attribute like `disabled` or
 `readonly`.
 
@@ -347,6 +358,8 @@ But there is a better way to do it...
 
 ## Example 4c
 
+[See in action...](https://mailcmd.github.io/cord-js/tutorials/4c/index.html)
+
 Now we will use special attributes `on:<event>` and `bind:<value>`.
 
 See this example:
@@ -389,6 +402,9 @@ container. Also you could use `$global.` to reference the field of another conta
 
 Now see what happend with special `bind:...` attribute.
 
+[See in action...](https://mailcmd.github.io/cord-js/tutorials/4c/index2.html)
+
+
 ```html
 <!DOCTYPE html>
 <html>
@@ -424,8 +440,10 @@ Now see what happend with special `bind:...` attribute.
 ```
 
 Bind allow to link the value of a property to a container field.
-
+    
 ## Example 5
+
+[See in action...](https://mailcmd.github.io/cord-js/tutorials/5/index.html)
 
 Let's go now with `:if` statement.
 
@@ -471,6 +489,9 @@ Let's go now with `:if` statement.
 Of course, `:else` statement is optional.
 
 ## Example 6
+
+[See in action...](https://mailcmd.github.io/cord-js/tutorials/6/index.html)
+
 Now we will talk about the `:foreach` statement. See this example:
 ```html
 <!DOCTYPE html>
@@ -591,6 +612,8 @@ Filename: `index.html`
 
 ## Example 7
 
+[See in action...](https://mailcmd.github.io/cord-js/tutorials/7/index.html)
+
 Now we go to play a little accesing other containers fields. See this example:
 
 Filename: `tasks.ctpl`
@@ -686,6 +709,8 @@ Filename: `index.html`
 Notice how we add function to container with `<cord-script>` tag and using `$self.<fun> = function(...){...}`. 
 
 ## Example 8
+
+**TO BE CONTINUED**
 
 Accesing fields in the bad and ugly way.
 $CORD.$...
