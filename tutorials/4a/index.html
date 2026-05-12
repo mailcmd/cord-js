@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>My title</title>
+    <title>Example 4a</title>
     <style>
       body {
           padding: 0;
           margin: 0;
+      }
+
+      cord-load-templates {
+          display: none;
       }
 
       .main {
@@ -28,18 +32,9 @@
     </style>
   </head>
   <body>
-    <cord-template cord-tpl-id="tpl-counter">
-      <!--
-          <div class="counter"
-             style="background-color: rgb(${counter * 10}, ${counter * 10}, ${counter * 10});
-                    color: contrast-color(rgb(${counter * 10}, ${counter * 10}, ${counter * 10}));"
-             color="#${(counter * 10).toString(16).repeat(3)}">
-          <button onclick="$CORD.update('%cord-id%', 'counter', ${counter}-1)">Dec -</button>
-          ${counter}
-          <button onclick="$CORD.update('%cord-id%', 'counter', ${counter}+1)">Inc +</button>
-        </div>
-      -->
-    </cord-template>
+    <cord-load-templates>
+      ./counter.ctpl
+    </cord-load-templates>
 
     <div class="main">
       <cord-container cord-id="counter1" cord-tpl-ref="tpl-counter"

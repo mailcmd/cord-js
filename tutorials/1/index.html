@@ -2,11 +2,33 @@
 <html>
   <head>
     <title>Example 1</title>
+    <style>
+      body {
+          padding: 0;
+          margin: 0;
+      }
+
+      .main {
+          width: 100vw;
+          height: 100vh;          
+      }
+
+      .main::after {
+          content: attr(color);
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 5rem;
+      }
+    </style>
   </head>
   <body>
     <div cord-id="example">
-      <div style="background-color: rgb(${counter * 10}, ${counter * 10}, ${counter * 10});
-                  color: contrast-color(rgb(${counter * 10}, ${counter * 10}, ${counter * 10}));">
+      <div class="main"
+           style="background-color: rgb(${counter * 10}, ${counter * 10}, ${counter * 10});
+                  color: contrast-color(rgb(${counter * 10}, ${counter * 10}, ${counter * 10}));"
+           color="#${(counter * 10).toString(16).repeat(3)}">
         <button onclick="$CORD.update('example', 'counter', ${counter}-1)">Dec -</button>
         ${counter}
         <button onclick="$CORD.update('example', 'counter', ${counter}+1)">Inc +</button>

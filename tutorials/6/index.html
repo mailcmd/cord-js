@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Example 6</title>
+    <style>
+      body {
+          padding: 0;
+          margin: 0;
+      }
+
+      input:disabled {
+          background-color: #f0f0f0;
+          border: 1px solid #ddd;
+      }
+
+      .main {
+      }
+
+    </style>
+  </head>
+  <body>
+    <cord-load-templates>
+      ./tasks.ctpl
+    </cord-load-templates>  
+    <div class="main" cord-id="main">
+      <button
+        onclick="$CORD.update_object('main', 'tasks',
+                 {action: 'push', datas: [
+                   {text: 'Dummy task', id: Math.round(Math.random()*1000)}
+                 ]})">
+        Add new dummy task
+      </button>
+      <ul>
+        :foreach task in tasks :do
+        <li>
+          ${task_i}: ${task.text} (${task.id})
+          <button
+            onclick="$CORD.update_object('main', 'tasks', {action: 'remove', datas: [${task_i}]})">
+            Remove
+          </button>          
+        </li>
+        :endforeach        
+      </ul>
+    </div>
+
+    <cord-container cord-id="main2" cord-tpl-ref="tpl-tasks">
+    </cord-container>
+    
+    <script>
+     window.addEventListener('cordready', function(e) {
+         const config = {
+             createGlobals: false,
+             strict: false,
+             containers: {
+                 main: {
+                     tasks: []
+                 },
+                 main2: {
+                     tasks: []
+                 }
+             }
+         };
+         $CORD.init(config);
+     });
+    </script>
+    <script src="../../cord.js"></script>
+  </body>
+</html>

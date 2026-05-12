@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Example 6</title>
+    <style>      
+      body {
+          padding: 0;
+          margin: 0;
+      }
+
+      h5 {
+          padding: 0;
+          margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <cord-load-templates>
+      ./tasks.ctpl
+    </cord-load-templates>
+    <table width="100%">
+      <tr valign="top">
+        <td width="50%">          
+          <div class="main" cord-id="main">
+            <button
+              on:click="$self.add({text: 'Dummy task', id: $self.$id++})">
+              Add new dummy task
+            </button>
+            <ul>
+              :foreach task in tasks :do
+              <li>
+                ${task_i}: ${task.text} (${task.id})
+                <button on:click="$self.remove(${task_i})">
+                  Remove
+                </button>          
+              </li>
+              :endforeach        
+            </ul>
+            <cord-script>
+              $self.add = function(v) {
+                $self.$tasks = $self.$tasks.concat([v]);
+              }
+              $self.remove = function(i) {
+                $self.tasks.remove(i);
+                // This below is a little tricky, seems that we assign a field to a it self, but
+                // actually we are using a CORD feature to force update of part of container that
+                // reference a field: any assign to a field where the field name is prefixed with
+                // '$' will force the update (without '$' is lazzy and wait for a future update).
+                $self.$tasks = $self.tasks;
+              }
+            </cord-script>
+          </div>
+          
+        </td>
+        <td>
+          <cord-container cord-id="main2" cord-tpl-ref="tpl-tasks">
+          </cord-container>
+        </td>
+      </tr>
+    </table>
+
+    <script>
+     window.addEventListener('cordready', function(e) {
+         const config = {
+             createGlobals: false,
+             strict: false,
+             containers: {
+                 main: {
+                     tasks: [],
+                     id: 0
+                 },
+                 main2: {
+                 }
+             }
+         };
+         $CORD.init(config);
+     });
+    </script>
+    <script src="../../cord.js"></script>
+  </body>
+</html>

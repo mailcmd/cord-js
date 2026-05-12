@@ -1,0 +1,14 @@
+<cord-template cord-tpl-id="tpl-tasks">
+  :if $global.main.tasks.length > 0 :do
+  <h5>Container showing external values from another container:</h5>
+  :endif
+  <table border="1">
+    :foreach task in $global.main.tasks :do
+      <tr>
+        <td>
+          ${task_i} ${task.text} (${task.id})
+        </td>
+      </tr>
+      :endforeach
+  </table>
+</cord-template>

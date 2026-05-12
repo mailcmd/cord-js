@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Example 4c</title>
+    <style>
+      body {
+          padding: 0;
+          margin: 0;
+      }
+
+      input:disabled {
+          background-color: #f0f0f0;
+          border: 1px solid #ddd;
+      }
+
+      .main {
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="main" cord-id="main">
+      <label><input type="checkbox" bind:checked="$self.$disabled">Disable</label>
+      <input :disabled="${disabled}" on:input="$self.$text=this.value" />
+      ${text}
+    </div>
+    
+    <script>
+     window.addEventListener('cordready', function(e) {
+         const config = {
+             createGlobals: false,
+             strict: false,
+             containers: {
+                 main: {
+                     disabled: false,
+                     text: ''
+                 }
+             }
+         };
+         $CORD.init(config);
+     });
+    </script>
+    <script src="../../cord.js"></script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+<cord-template cord-tpl-id="tpl-tasks">
+  <button
+    onclick="$CORD.update_object('%cord-id%', 'tasks',
+             {action: 'push', datas: [
+               {text: 'Dummy task', id: Math.round(Math.random()*1000)}
+             ]})">
+    Add new dummy task
+  </button>
+  <table border="1">
+    :foreach task in tasks :do
+      <tr>
+        <td>
+          ${task_i}: ${task.text} (${task.id})
+          <button
+           onclick="$CORD.update_object('%cord-id%', 'tasks', {action: 'remove', datas: [${task_i}]})">
+            Remove
+          </button>
+        </td>
+      </tr>
+      :endforeach
+  </table>
+</cord-template>
