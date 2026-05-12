@@ -542,16 +542,15 @@ Now we will talk about the `:foreach` statement. See this example:
 ```
 
 Nothing unusual, just a classic foreach. Now take in account some details:
-  1. The item variable (`task` in this case) instance every item of the array.
-  2. For every instance exists a variable named `<item>_i` (`task_i` in this case) that store the
+  1. The item variable (`task` in this case) instances every item of the array.
+  2. For every instance, exists a variable named `<item>_i` (`task_i` in this case) that store the
      current index.
 
 Also in this example you can see `$CORD.update_object`; more details later.
 
-Now let play a little more with this example. What about you want use `<table>` instead of `<ul>`.
-Well, bad news, this cannot be done with an embedded container, you need to use a template for
-this. Why? When a container is embebed (no load its content with a template) the browser try to
-parse and render its content, and stuff like that will cause problems:
+Now let play a little more with this example. What happen if you want use `<table>` instead of 
+`<ul>`. Well, bad news, this cannot be done with an embedded container, you need to use a template for this. Why? When a container is embebed (no load its content with a template) the browser try 
+to parse and render its content, and stuff like this...
 
 ```html
    ...
@@ -566,9 +565,9 @@ parse and render its content, and stuff like that will cause problems:
       </table>
    ...
 ```
+... will cause problems.
 
-CORD do not want parse this extract of html because when CORD takes action the browser already
-parse/render it and break its struct.
+CORD will not be able to parse this HTML snippet because, by the time CORD comes into play, the browser has already parsed or rendered it and has likely altered its structure.
 
 See the solution:
 
@@ -614,7 +613,7 @@ Filename: `index.html`
 
 [See in action](https://mailcmd.github.io/cord-js/tutorials/7/index.html)
 
-Now we go to play a little accesing other containers fields. See this example:
+Now let's play around a bit with the fields of other containers. Take a look at this example:
 
 Filename: `tasks.ctpl`
 ```html
