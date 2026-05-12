@@ -1,39 +1,5 @@
 <h1>WORK IN PROGRESS!</h1>
 
-# TODO
-
-## CORD-js
-   - [x] Why templates? Can I just use directly the element? It seems that not :(
-   - [x] I need an evaluator, it is not enough just replace field name.
-   - [x] Check if there is changes, if not do nothing (if change only attrs no update inside).
-   - [x] Open websocket to enable server side change container (SSCC)
-   - [x] Dynamic fetch and add templates/html from server
-   - [x] EventSource support (work as websocket but no channels)
-   - [x] What happend with containers inside containers?
-   - [x] Foreach: add index (i variable)
-   - [x] Add :if/:else statement
-   - [x] Improve foreach parser to allow nested statements
-   - [x] Improve if/else parser to allow nested statements
-   - [x] Create a custom element cord-template to create noscript templates
-   - [x] Create a custom element cord-container to invoke a cord-template
-   - [x] foreach and if parser while loop make security exit (max nested depth)
-   - [x] If inside foreach
-   - [x] Attributes type 'disabled' or 'checked'
-   - [x] <cord-script> tag, work on local functions and vars. Also try containers vars as local var.
-   - [x] Inside a container, not needed to use $CORD.$.<cont_id>.<prop> to modify, just <prop>.
-   - [x] 'get_indentifier' function is a piece of SHIT, I need to remake this function from zero.
-   - [x] Throw error when cord_id does not match [a-zA-Z0-9\_].
-   - [x] bind:... special attr. Useful to join element property with a local var.
-   - [ ] ~~Hide noscript and if/foreach templates.~~
-   - [ ] 'get_indentifier' function lexer still is not good enough, it need to be more accurate.
-   - [ ] Think in a way to pass a list of templates to load previous to bootstrap
-   - [ ] cord-style tag to load css and create superclasses.
-
-
-## WEBSOCKET and EVENTSOURCE
-   - [x] Define format for direct server update of cord_containers
-
-
 # CORD
 
 CORD is a small experimental reactive javascript library to web development. I am building this
@@ -867,4 +833,36 @@ Well, not much to explain, just refresh (re-render) all fields of each container
 `################################################################################################`
 
 
-## Installation
+# TODO
+
+## CORD-js
+   - [x] Why templates? Can I just use directly the element? It seems that not :(
+   - [x] I need an evaluator, it is not enough just replace field name.
+   - [x] Check if there is changes, if not do nothing (if change only attrs no update inside).
+   - [x] Open websocket to enable server side change container (SSCC)
+   - [x] Dynamic fetch and add templates/html from server
+   - [x] EventSource support (work as websocket but no channels)
+   - [x] What happend with containers inside containers?
+   - [x] Foreach: add index (i variable)
+   - [x] Add :if/:else statement
+   - [x] Improve foreach parser to allow nested statements
+   - [x] Improve if/else parser to allow nested statements
+   - [x] Create a custom element cord-template to create noscript templates
+   - [x] Create a custom element cord-container to invoke a cord-template
+   - [x] foreach and if parser while loop make security exit (max nested depth)
+   - [x] If inside foreach
+   - [x] Attributes type 'disabled' or 'checked'
+   - [x] <cord-script> tag, work on local functions and vars. Also try containers vars as local var.
+   - [x] Inside a container, not needed to use $CORD.$.<cont_id>.<prop> to modify, just <prop>.
+   - [x] 'get_indentifier' function is a piece of SHIT, I need to remake this function from zero.
+   - [x] Throw error when cord_id does not match [a-zA-Z0-9\_].
+   - [x] bind:... special attr. Useful to join element property with a local var.
+   - [ ] ~~Hide noscript and if/foreach templates.~~
+   - [ ] 'get_indentifier' function lexer still is not good enough, it need to be more accurate.
+   - [ ] Think in a way to pass a list of templates to load previous to bootstrap
+   - [ ] cord-style tag to load css and create superclasses.
+
+
+## WEBSOCKET and EVENTSOURCE
+   - [x] Define format for direct server update of cord_containers
+
