@@ -939,6 +939,7 @@ const CORD = function() {
         await process_cord_tags();
 
         $this.ready = true;
+        
         const cordReadyEvent = new CustomEvent('cordready', { detail: { cordInstance: $this } });
         window.dispatchEvent(cordReadyEvent);
     };
@@ -1506,6 +1507,7 @@ const CORD = function() {
         setInterval(gc_delete_obsolete, 60000);
 
         unblur_page();
+        document.body.style.visibility = 'visible';
     }
 
     /////////////////////////////////////////////////////////////////////////////////
