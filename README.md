@@ -4,8 +4,8 @@
 
 CORD is a small experimental reactive javascript library to web development. I am building this
 tiny monolitic library just because I **hate** big frameworks full of dependences and a lot of 
-externals shits. So I am doing my own reactive mini javascript framework. What I hope? Antthing,
-I am doing just for fun. 
+externals shits. So I am doing my own reactive mini javascript framework.  What do I hope to 
+achieve with this? Anything, I am doing it just for fun. 
 
 ### DISCLAMER: 
 **I'm building this library just for fun. I started with a simple idea and gradually made it a bit more complex, so this piece of code is a bit messy and should definitely not be used in a real-world setting.**
