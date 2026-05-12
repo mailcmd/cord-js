@@ -9,20 +9,8 @@ achieve with this? Anything, I am doing it just for fun.
 
 ### DISCLAMER: 
 **I'm building this library just for fun. I started with a simple idea and gradually made it a bit more complex, so this piece of code is a bit messy and should definitely not be used in a real-world setting.**
-    
-## How to use?
 
-Ways of use containers field inside a template:
-
-```
-<local-field>                         # render local field of the current container
-$self.<local-field>                   # render local field of the current container
-$global.<cord_id>.<local-field>       # render global field of the container <cord_id>
-```
-
-# It is better to learn with a tutorial...
-
-
+# It is better to learn with examples...
 ## Example 1
 Let's start with a simple `index.html`:
 ```html
