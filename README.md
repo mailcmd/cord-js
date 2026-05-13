@@ -10,7 +10,19 @@ achieve with this? Anything, I am doing it just for fun.
 ### DISCLAMER: 
 **I'm building this library just for fun. I started with a simple idea and gradually made it a bit more complex, so this piece of code is a bit messy and should definitely not be used in a real-world setting.**
 
-# It is better to learn with examples...
+### DISCLAMER 2:
+**I usually update the library, but it takes me a while to get around to updating the documentation. So some parts of the documentation might not be entirely accurate.**
+
+# DOC
+```
+“Teaching by example isn’t just one way to educate—it’s the only way.”
+
+                                                       Albert Einstein
+```
+
+Well, let's take a step back from Albert's perspective, and instead of *“educate by example,”* 
+let's *“learn from examples”*.
+
 ## Example 1
 
 [See in action](https://mailcmd.github.io/cord-js/tutorials/1/index.html)
