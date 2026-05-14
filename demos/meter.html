@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tree Menu Demo</title>
+
+  <style>
+    body {
+        height: 100vh;
+    }
+
+    #wrapper {
+        position: relative;
+        margin: auto;
+        height: 100%;
+    }
+    #meter {
+        padding: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="wrapper" cord-id="main">
+    <svg id="meter"
+         width="${width}"
+         height="${height}"
+         viewBox="0 0 ${width} ${height}">
+      <path
+        d="
+           M ${line_width/2 + 1} ${height}
+           A
+             ${height - line_width/2 - 1} ${height - line_width/2 - 1}
+             0 0 1
+             ${width - line_width/2 - 1}
+             ${height}"
+        fill="none"
+        stroke="#ccc"
+        stroke-width="${line_width + 2}"
+        />
+      <path
+        d="
+           M ${line_width/2 + 1} ${height}
+           A
+             ${height - line_width/2 - 1} ${height - line_width/2 - 1}
+             0 0 1
+             ${ (width / 2) + (height - line_width/2 - 1) * Math.cos(Math.PI * -angle / 180)}
+             ${ height - (height - line_width/2 - 1) * Math.sin(Math.PI * -angle / 180)}"
+        fill="none"
+        stroke="red"
+        stroke-width="${line_width}"
+        />
+    </svg>
+    <br/>
+    <label>${Math.round(100+100*(+angle)/180)}%</label>
+    <br/>
+    <input type="range" min="-180" max="0" value="${angle}" style="width: ${width}px"
+           bind:value="$self.$angle"/>
+  </div>
+
+  <script>
+    const config = {
+        createGlobals: false,
+        strict: true,
+        containers: {
+            main: {
+                height: 50,
+                width: 100,
+                line_width: 20,
+                angle: -90
+            }
+        }
+    };
+
+    window.addEventListener('cordready', async function(e) {
+        $CORD.init(config);
+    });
+  </script>
+  <script src="../cord.js"></script>
+      <!--
+          w = 2 * h
+          r = h - lw / 2
+          pc = (w / 2; h)
+          pl = (lw / 2; h)
+          pr = (r * cos(a); r * sin(a))
+        -->
+
+</body>
+</html>

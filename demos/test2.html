@@ -15,53 +15,9 @@
 <body>
   <cord-container cord-id="main">
     <h5>Container MAIN</h5>
-    <pre>
-      counter ->${counter}
-    </pre>
-  </cord-container>
-  <cord-container cord-id="test">
-    <h5>Container TEST</h5>
-    <span>
-      <button on:click="$self.$counter++" a="${counter}">
-        Local: ${counter}
-      </button>
-      <button on:click="$global.main.$counter++" a="${$global.main.counter}">
-        Global: ${$global.main.counter}
-      </button>
-    </span>
-
-    <pre>
-      Locals:
-      counter              -> ${counter}
-      counter              -> ${$self.counter}
-
-      Globals:
-      $global.main.counter -> ${$global.main.counter}
-    </pre>
-
-    :if counter % 2 == 0 :do
-    <div>Local counter es par</div>
-    :else
-    <div>Local counter es impar</div>
-    :endif
-
-    :if $global.main.counter % 2 == 0 :do
-    <div>Global counter es par</div>
-    :else
-    <div>Global counter es impar</div>
-    :endif
-
-
-    :foreach it in $global.main.list :do
-    <div>${it.a}</div>
-    :endforeach
-
-
     :foreach it in list :do
     <div>${it.a}</div>
     :endforeach
-
-
   </cord-container>
 
   <script>
@@ -69,12 +25,7 @@
         createGlobals: false,
         strict: true,
         containers: {
-          test: {
-            counter: 0,
-            list: [{a: 1}, {a: 2}, {a: 3}],
-          },
           main: {
-            counter: 0,
             list: [{a: 10}, {a: 20}, {a: 30}],
           }
         }
