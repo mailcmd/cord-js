@@ -880,7 +880,7 @@ Well, not much to explain, just refresh (re-render) all fields of each container
    - [x] Throw error when cord_id does not match [a-zA-Z0-9\_].
    - [x] bind:... special attr. Useful to join element property with a local var.
    - [ ] ~~Hide noscript and if/foreach templates.~~
-   - [ ] 'get_indentifier' function lexer still is not good enough, it need to be more accurate.
+   - [ ] 'get_indentifier' lexer still is not good enough, it need to be more accurate.
    - [ ] Think in a way to pass a list of templates to load previous to bootstrap
    - [ ] cord-style tag to load css and create superclasses.
 
