@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Classic counter</title>
+</head>
+
+<body>
+  <h1>Different modes of alter container fields</h1>
+  <div cord-id="example">
+    <button on:click="$self.$counter++">
+      on:click="$self.$counter++" <br/>
+      <h3>${counter}</h3>
+    </button>
+    <br/>
+    <br/>
+    <button on:click="$self.add()">
+      on:click="$self.add()" <br/>
+      <h3>${counter}</h3>
+    </button>
+    <br/>
+    <br/>
+    <button onclick="$CORD.$.example.$counter++">
+      onclick="$CORD.$.example.$counter++" <br/>
+      <h3>${counter}</h3>
+    </button>
+    <br/>
+    <br/>
+    <button onclick="$CORD.set('example:counter', $CORD.get('example:counter')+1)">
+      onclick="$CORD.set('example:counter', $CORD.get('example:counter')+1)" <br/>
+      <h3>${counter}</h3>
+    </button>
+    <br/>
+    <br/>
+    <button onclick="
+            $CORD.update_object('example', 'counter', {action: 'add', datas: [1]})
+            ">
+      $CORD.update_object('example', 'counter', {action: 'add', datas: [1]}) <br/>
+      <h3>${counter}</h3>
+    </button>
+    <br/>
+    <br/>
+    <cord-script>
+      $self.add = function() { $self.$counter++ }
+    </cord-script>      
+  </div>
+
+  <script>
+    const config = {
+        containers: {
+            example: {
+                counter: 0
+            }
+        }
+    };
+
+    window.addEventListener('cordready', async function(e) {
+        $CORD.init(config);
+    });
+  </script>
+  <script src="../cord.js"></script>
+</body>
+</html>
