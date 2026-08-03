@@ -747,7 +747,7 @@ const CORD = function() {
         const cord_id = elem.getAttribute('cord-id');
         const attrs = el.attributes;
         for (let i = 0; i < attrs.length; i++) {
-            if (! /\$\{.+?\}/.test(attrs[i].nodeValue)) continue;
+            if (! (/\$\{.+?\}/s).test(attrs[i].nodeValue)) continue;
             get_identifiers(attrs[i].nodeValue, cord_id).forEach(f => {
                 // if f is a global field
                 if (f.slice(0, 7) == '$global') {
@@ -1016,7 +1016,7 @@ const CORD = function() {
                     [e, ...e.querySelectorAll('*:not(template)')].forEach( el => {
                         const attrs = el.attributes;
                         for (let i = 0; i < attrs.length; i++) {
-                            if (! /\$\{.+?\}/.test(attrs[i].nodeValue)) continue;
+                            if (! (/\$\{.+?\}/s).test(attrs[i].nodeValue)) continue;
                             sub_attrs.push(
                                 {node: el, name: attrs[i].nodeName, eval: attrs[i].nodeValue}
                             );
